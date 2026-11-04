@@ -64,6 +64,15 @@ export function shiftStance(s: GameState, bloc: 'row' | 'us' | 'all', delta: num
   }
 }
 
+/**
+ * Structural power grabs (one actor takes control of AI) set a floor instead of adding a flat amount:
+ * nationalizing the labs puts you at 80+ whether you started at 3 or 50.
+ */
+export function concentratePower(s: GameState, floor: number, add: number) {
+  s.flags.seen_powerConc = true;
+  s.powerConc = clamp(Math.max(floor, s.powerConc + add), 0, 100);
+}
+
 /** Lifting a pause releases years of withheld research. Capability then climbs at s.overhangRate. */
 export function releaseOverhang(s: GameState, rate: number) {
   s.pauseCap = null;

@@ -1,5 +1,5 @@
 import type { Choice, GameState, PathId, Phase } from '../sim/types';
-import { releaseOverhang, shiftStance, ticker, unlockComputeTier } from '../sim/helpers';
+import { concentratePower, releaseOverhang, shiftStance, ticker, unlockComputeTier } from '../sim/helpers';
 import { leadMonths } from '../sim/derived';
 import { rand } from '../sim/rng';
 import { newNegotiation } from './negotiation';
@@ -255,8 +255,8 @@ export const DECISIONS: DecisionDef[] = [
     id: 'nationalize', title: 'Nationalize', phases: POST,
     text: 'Bring the frontier labs under federal control.',
     options: [
-      { label: 'Do it', lean: 'power', chips: ['g:security +3', 'g:compute growth +', 'b:power +15', 'b:trust −6'],
-        fx: { add: { security: 3, computeBoost: 0.01, powerConc: 15, trust: -6 } } },
+      { label: 'Do it', lean: 'power', chips: ['g:security +3', 'g:compute growth +', 'b:power → 80+', 'b:trust −6'],
+        fx: { add: { security: 3, computeBoost: 0.01, trust: -6 }, run: (s) => concentratePower(s, 80, 15) } },
       { label: 'Stay private', lean: 'people', chips: ['g:trust +2', 'b:theft risk'],
         fx: { add: { trust: 2 } } },
     ],
@@ -404,8 +404,8 @@ export const DECISIONS: DecisionDef[] = [
     id: 'b_emergency', title: 'Emergency powers', phases: POST, paths: ['B', 'D'],
     text: 'Govern AI by executive order.',
     options: [
-      { label: 'Declare', lean: 'power', chips: ['g:compute growth +', 'b:power +12', 'b:trust −4'],
-        fx: { add: { computeBoost: 0.01, powerConc: 12, trust: -4 } } },
+      { label: 'Declare', lean: 'power', chips: ['g:compute growth +', 'b:power → 50+', 'b:trust −4'],
+        fx: { add: { computeBoost: 0.01, trust: -4 }, run: (s) => concentratePower(s, 50, 12) } },
       { label: 'Go through Congress', lean: 'people', chips: ['g:trust +2', 'b:slower'],
         fx: { add: { trust: 2, computeBoost: -0.003 } } },
     ],

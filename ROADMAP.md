@@ -79,6 +79,25 @@ public trust      ▮▮▮▮▮▯▯▯▯▯  52
 
 ---
 
+## Playtest log (owner feedback, 2026-11-03)
+
+Running list. ✅ = fixed, 📋 = folded into a step below, ❓ = awaiting the owner.
+
+| # | Feedback | Response | Status |
+|---|---|---|---|
+| 1 | Early quarters (30s) are boring when little is on screen | 2027–28 is now 14s/quarter and later quarters are 12–20s | ✅ |
+| 2 | What is the seed? | It sets the run's hidden setup (China's intent, alignment, difficulty) and every random roll. Showing it on the launch screen invites replays that spoil the Reveal. Idea: move it behind a "custom seed" link, or show it on the Reveal for sharing | ❓ |
+| 3 | Geneva: "push too hard and they walk" is false. Offering everything is always accepted | Confirmed: offering everything is accepted 100% by a cooperative or opportunistic China. Cause: one sweetener (lift export controls) outweighs every objection, and talks only collapse after round 3. Proposed fix: hidden **red lines** by intent (an offer that includes one ends talks immediately, and no sweetener buys it), intel reveals them, and each extra term costs goodwill | ❓ |
+| 4 | "Always pick the safe option" is a pattern people will spot; it gets boring. But rewarding speed betrays AI 2040 | Measured: the safe player wins 29–100% on every path, the race player 0% everywhere, and Plan A also wins on score because it runs longest. Principle adopted: **speed is never rewarded, but falling behind is punished**, because AI 2040 says it should be. The primary control (Step 3) creates a sweet spot; scoring and costs move to Step 5 | 📋 Step 3, Step 5 |
+| 5 | Nationalizing the labs only added +15 power (3 → 18) | Structural power grabs now set a floor (`concentratePower`): nationalize → 80+, emergency powers → 50+, giving ASI to the President → 90+ or to the lab → 75+. Random play now ends in the Gilded Cage 26% of the time (was 17%) | ✅ |
+
+### Design principles from playtesting
+- **Speed is never rewarded; falling behind is punished.** Going too slow fails for reasons from the scenario: China passes you, a deal stops appealing to them, China reaches ASI with weaker alignment, and AI-automated alignment research stalls without capable models.
+- **Structural changes set levels; incremental ones add deltas.** If a choice changes *who controls AI*, the stat should land where that structure implies, regardless of where it started.
+- **No option should be right in every situation.** A decision's cost should depend on the current state (lead, readout, intel), so the same choice can be right one quarter and wrong the next.
+
+---
+
 ## Step 3. The primary control
 
 Plague Inc's core loop is shaping your pathogen. Universal Paperclips has a few panels you manage continuously. Decisions alone are reactive, so the player needs one thing they *steer*.
@@ -123,6 +142,9 @@ Builds on Step 3 (and option D if chosen):
 ## Step 5. Rebalance choice impact vs. the rails
 
 Once the control exists, tune so that:
+- **Score** = how good the ending is × prosperity *per year*, not the economy summed over time. Plan A must not win just by lasting longest (today: Plan A safe scores 1539 vs 135–382 elsewhere).
+- **Over-caution costs something real** (see the playtest principles): falling behind China has thesis-grounded consequences.
+- **Careful racing** has a skilled way to win (today 8–29%).
 - Default play follows the AI 2040 narrative for the chosen path.
 - Skilled or reckless steering moves milestones within the band and changes the ending.
 - No single allocation dominates across seeds. The runner gains allocation-strategy bots.

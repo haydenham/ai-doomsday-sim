@@ -1,5 +1,5 @@
 import type { Choice, Fx, GameState, PendingEvent } from '../sim/types';
-import { moment, releaseOverhang, shiftStance, ticker } from '../sim/helpers';
+import { concentratePower, moment, releaseOverhang, shiftStance, ticker } from '../sim/helpers';
 import { leadMonths } from '../sim/derived';
 import { AC, DEAL_RESUME_Q, TED_AI } from '../sim/constants';
 import { rand } from '../sim/rng';
@@ -276,10 +276,10 @@ export const EVENTS: EventDef[] = [
     choices: [
       { label: 'Everyone', lean: 'people', chips: ['g:power −25', 'g:trust +10', 'b:slow, messy'],
         fx: { add: { powerConc: -25, trust: 10 }, moment: 'You gave control of superintelligence to a global charter.' } },
-      { label: 'The President', lean: 'power', chips: ['g:fast', 'b:power +30'],
-        fx: { add: { powerConc: 30 }, moment: 'You gave control of superintelligence to the President.' } },
-      { label: 'The lab', lean: 'power', chips: ['g:prosperity +5%', 'b:power +25'],
-        fx: { add: { powerConc: 25 }, mul: { gdp: 1.05 }, moment: 'You left superintelligence in the hands of the lab that built it.' } },
+      { label: 'The President', lean: 'power', chips: ['g:fast', 'b:power → 90+'],
+        fx: { run: (s) => concentratePower(s, 90, 30), moment: 'You gave control of superintelligence to the President.' } },
+      { label: 'The lab', lean: 'power', chips: ['g:prosperity +5%', 'b:power → 75+'],
+        fx: { run: (s) => concentratePower(s, 75, 25), mul: { gdp: 1.05 }, moment: 'You left superintelligence in the hands of the lab that built it.' } },
     ],
   },
   // ── Breakthroughs (prosperity spikes) ─────────────────────────────────
