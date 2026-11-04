@@ -128,6 +128,58 @@ security      ▮▯▯▯▯▯▯▯▯▯  10%   anti-theft, verification
 
 **Recommendation: A as the primary control, D later as the secondary.** Decisions stay as the interrupting events.
 
+### Step 3 spec: compute allocation (draft, awaiting owner approval)
+
+**Goal.** Replace "always pick the safe option" with a dial whose best setting depends on the situation. Rule: *speed is never rewarded; falling behind is punished.*
+
+**The panel**
+```
+── compute allocation          labs set this · you can move 10%/qtr
+capabilities  ▮▮▮▮▮▮▮▯▯▯  70%   ◂ ▸
+safety        ▮▯▯▯▯▯▯▯▯▯  10%   ◂ ▸
+deployment    ▮▮▯▯▯▯▯▯▯▯  15%   ◂ ▸
+security      ▮▯▯▯▯▯▯▯▯▯   5%   ◂ ▸
+```
+- ▸ adds 10% to a row, taken evenly from the others. ◂ gives 10% back. The shares always sum to 100%. The clock keeps running.
+- **Slow reveal:**
+  - The panel appears ~Q3 2027 with two rows, capabilities and safety.
+  - Deployment appears once jobs start being automated.
+  - Security appears after the first theft scare.
+
+**What each share does** (hooking into existing levers, not new stats)
+| Share | Effect | Why it fails at the extremes |
+|---|---|---|
+| Capabilities | Speed of algorithmic progress, which builds the lead | Too high: alignment loss scales with speed (as now) |
+| Safety | Safety research grows each quarter, **scaled by capability**: in AI 2040, alignment work at this stage is done *by* capable AIs | Too high: capabilities stall, China passes you, and the safety work itself slows |
+| Deployment | Economy growth, trust, jobs | Too low: the economy stalls, trust falls, Plan S is blocked |
+| Security | Lab security grows toward a target and resists theft, plus verification during a deal | Too low: weights are stolen and the lead vanishes overnight |
+
+**Influence → control (progression)**
+- **Early, before 2029:** the labs own the dial. It drifts back toward their preference (≈70/10/15/5), and you can move it at most 10% per quarter. You *nudge* it.
+- **The path changes the rules:**
+  - Plan D: the labs' preference goes to 85% capabilities.
+  - Plan C: the drift weakens.
+  - Plan A: capability beyond the treaty ceiling is wasted, so moving share into safety is free.
+  - Plan S: capabilities are locked at ~0.
+- **Nationalizing the labs** gives you full control: no drift, no limit on moves. It costs power concentration 80+, so control is a real trade.
+
+**Falling behind is punished** (thesis-grounded, partly in place already)
+- Chinese superintelligence uses China's alignment, so a lead lost often means Loss of Control or the Gilded Cage.
+- Deal appeal falls when you're behind (already in negotiation odds).
+- Burn the Lead requires a lead (already).
+- New: safety research yield scales with US capability.
+
+**Subtraction: decisions the dial replaces**
+- **Folded into the dial:**
+  - `alignment_grants` (safety share);
+  - `rd_credit` (capabilities share);
+  - `lab_security` (security share);
+  - `c_spend` (Plan C's "pause a quarter": just move the dial).
+- **Become laws that constrain the dial:** `cap_rd` becomes "cap capabilities at 25%", a ceiling on the row.
+- **Stay as-is:** decisions about *external* things (sites, China, deals, people, power).
+
+**Sim.** Add allocation bots: fixed splits (all-capabilities, all-safety, balanced) and a reactive bot that steers by readout and lead. Success criterion: **no fixed split is best on every path, and the reactive bot beats all fixed splits.**
+
 ---
 
 ## Step 4. Interactive map
