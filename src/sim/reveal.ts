@@ -36,10 +36,9 @@ export function pivotalDecision(s: GameState) {
 /** Counterfactual nudges for the replay. */
 export function whatIfs(s: GameState): string[] {
   const out: string[] = [];
-  const used = (id: string) => (s.uses[id] ?? 0) > 0;
   if (s.ending === 'flourishing') return out;
-  if (!s.panels.includes('alignment')) out.push('You never funded enough alignment research to see a readout. Three grants would have shown you this chart while it was happening.');
-  if (s.path === 'A' && !used('fund_verification')) out.push('You chose a deal without funding verification. Inspectors had nothing to check with.');
+  if (!s.panels.includes('alignment')) out.push('You never did enough alignment research to see a readout. More compute on safety would have shown you this chart while it was happening.');
+  if (s.flags.dealEver && s.verification < 2) out.push('You made a deal with almost no verification. Inspectors had little to check with.');
   if (peakCovert(s) > 0 && s.intel < 2) out.push('China ran covert compute the whole time. Better intelligence would have found it.');
   if (s.asiBy === 'cn') out.push('China got there first. Securing the labs or holding export controls would have kept your lead.');
   if (s.powerConc >= 60 && s.ending === 'gilded') out.push('The AI was aligned, but with very few people. Open research and an AI dividend spread power out.');
