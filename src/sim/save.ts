@@ -24,6 +24,7 @@ export function loadGame(): GameState | null {
     if (saved.ending || typeof saved.t !== 'number') return null;
     // Fields added since the save get their new-game defaults.
     const s = Object.assign(newGame(saved.seed), saved);
+    if (s.negotiation && !s.negotiation.redLines) s.negotiation.redLines = [];
     if (s.pending) {
       const id = s.pending.id;
       const d = DECISION_BY_ID[id];

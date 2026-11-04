@@ -13,7 +13,7 @@ import { DECISIONS, decisionEligible } from '../content/decisions';
 import { EVENTS, EVENT_BY_ID, eventToPending, type EventDef } from '../content/events';
 import { FLAVOR, HINTS } from '../content/ticker';
 import { pathDef } from '../content/paths';
-import { NEGOTIATION_ITEMS, newNegotiation } from '../content/negotiation';
+import { EXTRA_TERM_COST, NEGOTIATION_ITEMS, newNegotiation } from '../content/negotiation';
 
 export const SUBSTEP = 0.01; // quarters per simulation substep (small so counters tick smoothly)
 
@@ -415,8 +415,10 @@ export function chooseFork(s: GameState, path: PathId) {
 export function negotiationOdds(s: GameState, offer: string[]) {
   const n = s.negotiation!;
   const base = s.intent === 'cooperative' ? 1.5 : s.intent === 'opportunistic' ? 0.4 : -0.6;
-  // The further China is behind, the more a deal appeals to it.
-  return base + leadMonths(s) / 10 - s.tension / 40 + offer.reduce((a, id) => a + (n.values[id] ?? 0), 0);
+  const terms = offer.filter((id) => NEGOTIATION_ITEMS.some((i) => i.id === id && i.kind === 'term')).length;
+  // The further China is behind, the more a deal appeals to it. Every extra demand costs goodwill.
+  return base + leadMonths(s) / 10 - s.tension / 40 - EXTRA_TERM_COST * Math.max(0, terms - 2)
+    + offer.reduce((a, id) => a + (n.values[id] ?? 0), 0);
 }
 
 export function submitOffer(s: GameState, offer: string[]) {
@@ -425,6 +427,16 @@ export function submitOffer(s: GameState, offer: string[]) {
   const terms = offer.filter((id) => NEGOTIATION_ITEMS.some((i) => i.id === id && i.kind === 'term'));
   if (terms.length < 2) { n.lastResponse = 'A deal needs at least two terms.'; return; }
   n.round++;
+  const red = offer.find((id) => n.redLines.includes(id));
+  if (red) {
+    const item = NEGOTIATION_ITEMS.find((i) => i.id === red)!;
+    if (!n.revealed.includes(red)) n.revealed.push(red);
+    n.outcome = 'rejected';
+    n.lastResponse = `Beijing walks out. "${item.refusal}"`;
+    s.tension = clamp(s.tension + 20, 0, 100);
+    moment(s, `Talks with China collapsed: you crossed a red line (${item.name.toLowerCase()}).`, 'danger');
+    return;
+  }
   const score = negotiationOdds(s, offer);
   const bluff = s.intent === 'racing' && score > -1.2 && chance(s, 0.35);
   if (score >= 0 || bluff) {

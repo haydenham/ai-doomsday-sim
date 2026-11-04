@@ -130,7 +130,7 @@ export function ForkScreen({ s }: { s: GameState }) {
 
 export function NegotiationBox({ s }: { s: GameState }) {
   const n = s.negotiation!;
-  const [offer, setOffer] = useState<string[]>(['inspections', 'joint']);
+  const [offer, setOffer] = useState<string[]>([]);
   const toggle = (id: string) => { if (n.outcome !== 'pending') return; sfx.click(); setOffer((o) => (o.includes(id) ? o.filter((x) => x !== id) : [...o, id])); };
   const go = () => {
     if (n.outcome === 'pending') { sfx.event(); game.act((st) => submitOffer(st, offer)); }
@@ -143,6 +143,7 @@ export function NegotiationBox({ s }: { s: GameState }) {
   }, [offer, n.outcome, n.round]);
   const lean = (id: string) => {
     if (!n.revealed.includes(id)) return <span className="dim">?</span>;
+    if (n.redLines.includes(id)) return <span className="bad">red line</span>;
     const v = n.values[id];
     return v > 0 ? <span className="good">they want this</span> : v > -1 ? <span className="amber">they dislike this</span> : <span className="bad">they hate this</span>;
   };
@@ -152,7 +153,7 @@ export function NegotiationBox({ s }: { s: GameState }) {
       <div className="box box-milestone">
         <div className="box-head"><span>negotiation · {status}</span><span className="dim">■ clock stopped</span></div>
         <div className="box-title">Geneva</div>
-        <div className="box-body">Pick at least two terms. More terms, stronger deal. Push too hard and they walk.</div>
+        <div className="box-body">Pick at least two terms. More terms, stronger deal. Cross a red line and they walk.</div>
         <div className="options">
           {NEGOTIATION_ITEMS.map((it, i) => (
             <button key={it.id} className={`option neg ${offer.includes(it.id) ? 'on' : ''}`} onClick={() => toggle(it.id)}>

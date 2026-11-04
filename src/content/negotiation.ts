@@ -1,5 +1,5 @@
 import type { Fx, GameState, Negotiation } from '../sim/types';
-import { gauss } from '../sim/rng';
+import { gauss, rand } from '../sim/rng';
 
 export interface NegotiationItem {
   id: string;
@@ -39,12 +39,20 @@ export const NEGOTIATION_ITEMS: NegotiationItem[] = [
     refusal: '', value: [2.2, 2.8, 2.6] },
 ];
 
+/** Each term past the first two costs this much goodwill. */
+export const EXTRA_TERM_COST = 0.4;
+
 export function newNegotiation(s: GameState): Negotiation {
   const idx = s.intent === 'cooperative' ? 0 : s.intent === 'opportunistic' ? 1 : 2;
   const values: Record<string, number> = {};
   for (const it of NEGOTIATION_ITEMS) values[it.id] = it.value[idx] + gauss(s) * 0.5;
-  // Intel reveals part of China's hand: the strongest feelings first.
-  const byStrength = [...NEGOTIATION_ITEMS].sort((a, b) => Math.abs(values[b.id]) - Math.abs(values[a.id]));
-  const revealed = byStrength.slice(0, Math.min(NEGOTIATION_ITEMS.length, 1 + Math.floor(s.intel))).map((i) => i.id);
-  return { round: 0, maxRounds: 3, values, revealed, lastResponse: null, outcome: 'pending' };
+  // Red lines: the terms China hates most, and no concession buys them. More when China is racing.
+  const nRed = s.intent === 'racing' ? 2 : s.intent === 'opportunistic' ? 1 : rand(s) < 0.3 ? 1 : 0;
+  const redLines = NEGOTIATION_ITEMS.filter((i) => i.kind === 'term')
+    .sort((a, b) => values[a.id] - values[b.id]).slice(0, nRed).map((i) => i.id);
+  // Intel reveals part of China's hand: red lines first, then the strongest feelings. No intel, no hints.
+  const byStrength = [...NEGOTIATION_ITEMS].sort((a, b) =>
+    Number(redLines.includes(b.id)) - Number(redLines.includes(a.id)) || Math.abs(values[b.id]) - Math.abs(values[a.id]));
+  const revealed = byStrength.slice(0, Math.min(NEGOTIATION_ITEMS.length, Math.ceil(s.intel))).map((i) => i.id);
+  return { round: 0, maxRounds: 3, values, redLines, revealed, lastResponse: null, outcome: 'pending' };
 }

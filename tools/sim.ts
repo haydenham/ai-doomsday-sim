@@ -62,8 +62,9 @@ function botTurn(s: GameState, bot: Bot) {
   if (s.negotiation) {
     const n = s.negotiation;
     if (n.outcome !== 'pending') return closeNegotiation(s);
-    const offers = [['inspections', 'joint', 'macd'], ['inspections', 'joint', 'open'], ['inspections', 'joint', 'open', 'lift_controls']];
-    submitOffer(s, offers[Math.min(n.round, offers.length - 1)]);
+    // Ask for every term not known to be a red line; add the sweetener after a rejection.
+    const terms = ['inspections', 'chipcaps', 'joint', 'open', 'macd'].filter((id) => !(n.revealed.includes(id) && n.redLines.includes(id)));
+    submitOffer(s, n.round === 0 ? terms : [...terms, 'lift_controls']);
   }
 }
 

@@ -114,6 +114,8 @@ export interface Negotiation {
   maxRounds: number;
   /** China's hidden valuation for each item. */
   values: Record<string, number>;
+  /** Terms China will never accept. Offering one ends the talks. */
+  redLines: string[];
   /** Items whose valuation sign intel has revealed. */
   revealed: string[];
   lastResponse: string | null;
