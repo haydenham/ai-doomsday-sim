@@ -85,6 +85,7 @@ Running list. ✅ = fixed, 📋 = folded into a step below, ❓ = awaiting the o
 
 | # | Feedback | Response | Status |
 |---|---|---|---|
+| 0 | **Bug:** got sent back to the launch screen mid-run and lost all progress | Cause: the game lived only in memory, so any page reload wiped it. A dev-server hot reload after Claude edited files triggered it. Fix: autosave to browser storage (`sim/save.ts`) about every second and after every action, plus a **continue** button on the launch screen. Open decisions are restored, and the save is cleared when a run ends | ✅ |
 | 1 | Early quarters (30s) are boring when little is on screen | 2027–28 is now 14s/quarter and later quarters are 12–20s | ✅ |
 | 2 | What is the seed? | It sets the run's hidden setup (China's intent, alignment, difficulty) and every random roll. Showing it on the launch screen invites replays that spoil the Reveal. Idea: move it behind a "custom seed" link, or show it on the Reveal for sharing | ❓ |
 | 3 | Geneva: "push too hard and they walk" is false. Offering everything is always accepted | Confirmed: offering everything is accepted 100% by a cooperative or opportunistic China. Cause: one sweetener (lift export controls) outweighs every objection, and talks only collapse after round 3. Proposed fix: hidden **red lines** by intent (an offer that includes one ends talks immediately, and no sweetener buys it), intel reveals them, and each extra term costs goodwill | ❓ |

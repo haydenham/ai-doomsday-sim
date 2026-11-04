@@ -31,6 +31,8 @@ input { font: inherit; }
 .line { white-space: pre-wrap; }
 .btn { color: var(--amber); margin-top: 20px; }
 .btn:hover:not(:disabled) { color: var(--bright); }
+.btn + .btn { margin-left: 24px; }
+.btn.dim { color: var(--dim); }
 
 .fade-in { animation: fadeIn .8s ease both; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

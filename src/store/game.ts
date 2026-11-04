@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import type { GameState } from '../sim/types';
 import { SUBSTEP, isBlocked, newGame, skipQuarter, step } from '../sim/engine';
 import { quarterSeconds } from '../sim/derived';
+import { clearSave, loadGame, saveGame } from '../sim/save';
 
 type Listener = () => void;
 
@@ -16,6 +17,7 @@ class GameStore {
   private acc = 0;
   private listeners = new Set<Listener>();
   private lastEmit = 0;
+  private lastSave = 0;
 
   subscribe = (l: Listener) => {
     this.listeners.add(l);
@@ -26,10 +28,28 @@ class GameStore {
 
   emit(force = true) {
     const now = performance.now();
+    if (this.s && (force || now - this.lastSave > 1000)) this.persist(now);
     if (!force && now - this.lastEmit < 33) return;
     this.lastEmit = now;
     this.version++;
     this.listeners.forEach((l) => l());
+  }
+
+  private persist(now: number) {
+    this.lastSave = now;
+    if (this.s!.ending) clearSave();
+    else saveGame(this.s!);
+  }
+
+  /** The autosaved run, if there is one to continue. */
+  saved = () => loadGame();
+
+  resume(s: GameState) {
+    this.s = s;
+    this.acc = 0;
+    this.paused = true;
+    this.speed = 1;
+    this.emit();
   }
 
   start(seed: number) {
@@ -42,6 +62,7 @@ class GameStore {
 
   quit() {
     this.s = null;
+    clearSave();
     this.emit();
   }
 

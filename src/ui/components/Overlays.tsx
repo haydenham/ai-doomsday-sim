@@ -31,20 +31,23 @@ const INTRO = ['January 2027.', 'You run AI policy for the United States.'];
 export function StartScreen() {
   const [shown, setShown] = useState(0);
   const [seed, setSeed] = useState(() => String(randomSeed()));
+  const [saved] = useState(() => game.saved());
   useEffect(() => {
     if (shown > INTRO.length) return;
     const t = setTimeout(() => setShown((n) => n + 1), 900);
     return () => clearTimeout(t);
   }, [shown]);
   const begin = () => { sfx.unlock(); game.start(Number(seed) || randomSeed()); };
-  useKeys((k) => { if (k === 'Enter' && shown > INTRO.length) begin(); }, [shown, seed]);
+  const resume = () => { sfx.unlock(); if (saved) game.resume(saved); };
+  useKeys((k) => { if (k === 'Enter' && shown > INTRO.length) (saved ? resume : begin)(); }, [shown, seed]);
   return (
     <div className="start">
       <div className="start-title">AI 2040</div>
       {INTRO.slice(0, shown).map((l) => <div key={l} className="line fade-in">&gt; {l}</div>)}
       {shown > INTRO.length && (
         <div className="fade-in">
-          <button className="btn" onClick={begin}>[ begin ]</button>
+          {saved && <button className="btn" onClick={resume}>[ continue · {quarterLabel(saved.q)}{saved.path ? ` · plan ${saved.path}` : ''} ]</button>}
+          <button className={`btn ${saved ? 'dim' : ''}`} onClick={begin}>[ {saved ? 'new game' : 'begin'} ]</button>
           <div className="seed">seed <input value={seed} onChange={(e) => setSeed(e.target.value.replace(/\D/g, ''))} /></div>
         </div>
       )}
