@@ -13,8 +13,8 @@ import { LEVER_MAX, bigStr, levelWord, moneyStr, mult } from './format';
 
 const seen = (s: GameState, k: string) => !!s.flags[`seen_${k}`];
 
-const Lever = ({ label, value, perYear }: { label: string; value: number; perYear?: number }) =>
-  <Stat label={label} value={value} max={LEVER_MAX}
+const Lever = ({ label, value, perYear, hint }: { label: string; value: number; perYear?: number; hint?: string }) =>
+  <Stat label={label} hint={hint} value={value} max={LEVER_MAX}
     word={<>{levelWord(value)}{perYear !== undefined && perYear >= 0.05 && <span className="dim trend"> ▲{perYear.toFixed(1)}/yr</span>}</>} />;
 
 /** The status block. Starts nearly empty; each line appears the first time it matters. */
@@ -24,14 +24,14 @@ export function Status({ s }: { s: GameState }) {
   const growth = (Math.pow(s.gdp / ref.gdp, 4 / span) - 1) * 100;
   return (
     <Section title="united states">
-      {s.q >= 1 && <Row label="economy" sub={<span className={growth >= 0 ? 'good' : 'bad'}>{growth >= 0 ? '▲' : '▼'}{Math.abs(growth).toFixed(1)}%/yr</span>}>{moneyStr(s.gdp)}</Row>}
-      {seen(s, 'trust') && <Stat label="public trust" value={s.trust} word={Math.round(s.trust)} tone={s.trust < 30 ? 'bad' : undefined} />}
-      {seen(s, 'powerConc') && <Stat label="power concentration" value={s.powerConc} word={Math.round(s.powerConc)} tone={s.powerConc >= 60 ? 'bad' : undefined} />}
-      {s.jobs >= 5 && <Stat label="jobs automated" value={s.jobs} word={`${Math.round(s.jobs)}%`} />}
-      {s.panels.includes('compute') && <Row label="frontier AI">{capLevel(s.cap).cur.name.toLowerCase()}</Row>}
-      {seen(s, 'safety') && <Lever label="safety research" value={s.safety} perYear={s.panels.includes('allocation') ? 4 * safetyRate(s) : undefined} />}
-      {seen(s, 'verification') && <Lever label="verification" value={s.verification} />}
-      {seen(s, 'security') && <Lever label="lab security" value={s.security} />}
+      {s.q >= 1 && <Row label="economy" hint="US GDP per year. Your score is the economy over time, scaled by how the story ends." sub={<span className={growth >= 0 ? 'good' : 'bad'}>{growth >= 0 ? '▲' : '▼'}{Math.abs(growth).toFixed(1)}%/yr</span>}>{moneyStr(s.gdp)}</Row>}
+      {seen(s, 'trust') && <Stat label="public trust" hint="How much the public backs you. Low trust loses elections and rules out a shutdown." value={s.trust} word={Math.round(s.trust)} tone={s.trust < 30 ? 'bad' : undefined} />}
+      {seen(s, 'powerConc') && <Stat label="power concentration" hint="How few people control AI. 60+ when superintelligence arrives means the Gilded Cage." value={s.powerConc} word={Math.round(s.powerConc)} tone={s.powerConc >= 60 ? 'bad' : undefined} />}
+      {s.jobs >= 5 && <Stat label="jobs automated" hint="Share of jobs now done by AI. Job losses wear down public trust." value={s.jobs} word={`${Math.round(s.jobs)}%`} />}
+      {s.panels.includes('compute') && <Row label="frontier AI" hint="The most capable US AI system right now.">{capLevel(s.cap).cur.name.toLowerCase()}</Row>}
+      {seen(s, 'safety') && <Lever label="safety research" hint="Your alignment science. Slows models drifting from human goals and sharpens the readout." value={s.safety} perYear={s.panels.includes('allocation') ? 4 * safetyRate(s) : undefined} />}
+      {seen(s, 'verification') && <Lever label="verification" hint="Your ability to check that others follow the rules. Makes deals stronger and catches cheating." value={s.verification} />}
+      {seen(s, 'security') && <Lever label="lab security" hint="How well model weights are guarded. Weak security invites theft by China." value={s.security} />}
     </Section>
   );
 }
@@ -55,11 +55,11 @@ export function Compute({ s }: { s: GameState }) {
   const held = s.pauseCap !== null && s.capRaw > s.cap + 0.02;
   return (
     <Section title="compute">
-      <Row label="chips (H100e)">{bigStr(s.raw)}</Row>
-      {s.panels.includes('algorithms') && <Row label="effective">{bigStr(s.raw * s.algo)}</Row>}
-      <Row label="sites">{COMPUTE_TIERS[s.computeTier - 1].name.toLowerCase()}</Row>
+      <Row label="chips (H100e)" hint="US AI chips, counted in H100-equivalents.">{bigStr(s.raw)}</Row>
+      {s.panels.includes('algorithms') && <Row label="effective" hint="Chips × algorithm efficiency: the compute that actually counts.">{bigStr(s.raw * s.algo)}</Row>}
+      <Row label="sites" hint="Where your datacenters are. Each new kind of site multiplies compute.">{COMPUTE_TIERS[s.computeTier - 1].name.toLowerCase()}</Row>
       {next && s.computeTier < 9 && <div className="line dim">next: {next.name.toLowerCase()}</div>}
-      <Stat label="capability" value={lvl.progress} max={1} word={`${Math.round(lvl.progress * 100)}%`} />
+      <Stat label="capability" hint="Progress toward the next AI milestone." value={lvl.progress} max={1} word={`${Math.round(lvl.progress * 100)}%`} />
       <div className="line dim">→ {held ? 'held at treaty cap' : lvl.next?.name.toLowerCase() ?? 'beyond'}</div>
     </Section>
   );
@@ -70,8 +70,8 @@ export function Algorithms({ s }: { s: GameState }) {
   const byAI = s.algoByAI.includes(s.algoTier);
   return (
     <Section title="algorithms">
-      <Row label="efficiency">{mult(s.algo).num + (mult(s.algo).unit ? ` ${mult(s.algo).unit}` : '')}</Row>
-      <Row label="latest">{cur.name.toLowerCase()}</Row>
+      <Row label="efficiency" hint="How much more today's algorithms get from a chip than 2027's did.">{mult(s.algo).num + (mult(s.algo).unit ? ` ${mult(s.algo).unit}` : '')}</Row>
+      <Row label="latest" hint="The newest algorithmic breakthrough.">{cur.name.toLowerCase()}</Row>
       {byAI && <div className="line amber">found by AI</div>}
     </Section>
   );
@@ -86,9 +86,9 @@ export function Intelligence({ s }: { s: GameState }) {
   });
   return (
     <Section title="intelligence explosion">
-      <Row label="AI research speed">{`${s.rdMult.toFixed(1)}×`}</Row>
-      <Row label="AI researchers">{bigStr(agentCopies(s), 1e3)}</Row>
-      <Row label="research by AI">{`${share.toFixed(2)}%`}</Row>
+      <Row label="AI research speed" hint="How much faster AI progress runs now that AIs do the research.">{`${s.rdMult.toFixed(1)}×`}</Row>
+      <Row label="AI researchers" hint="Copies of AI researchers running in parallel.">{bigStr(agentCopies(s), 1e3)}</Row>
+      <Row label="research by AI" hint="Share of AI research done by AIs rather than people.">{`${share.toFixed(2)}%`}</Row>
       <div className="ai-stream">{lines.map((l, i) => <div key={i} style={{ opacity: 1 - i * 0.22 }}>{l}</div>)}</div>
     </Section>
   );
@@ -132,7 +132,7 @@ export function Alignment({ s }: { s: GameState }) {
   const verdict = r >= 75 ? 'looks aligned' : r >= 55 ? 'probably fine' : r >= 40 ? 'concerning' : 'danger';
   return (
     <Section title="alignment readout" className="teal">
-      <Stat label="estimate" value={r} word={<>{Math.round(r)}% <span className="dim">±{Math.round(s.readoutSigma)}</span></>} tone={r < 40 ? 'bad' : undefined} />
+      <Stat label="estimate" hint="What your evals say about alignment. ± is the uncertainty. Capable models can fool it." value={r} word={<>{Math.round(r)}% <span className="dim">±{Math.round(s.readoutSigma)}</span></>} tone={r < 40 ? 'bad' : undefined} />
       <div className={`line ${r >= 55 ? 'good' : r >= 40 ? 'amber' : 'bad'}`}>{verdict}</div>
       <div className="line dim">it can be fooled.</div>
     </Section>
@@ -168,10 +168,10 @@ export function World({ s }: { s: GameState }) {
   return (
     <Section title="world">
       <WorldMap s={s} />
-      <Row label="lead over china" tone={lead >= 0 ? 'good' : 'bad'}>{`${lead >= 0 ? '+' : '−'}${Math.abs(lead).toFixed(1)} mo`}</Row>
-      <Stat label="tension" value={s.tension} word={Math.round(s.tension)} tone={s.tension >= 70 ? 'bad' : undefined} />
-      {seen(s, 'intel') && <Lever label="intelligence" value={s.intel} />}
-      {seen(s, 'intel') && <Row label="china's posture" sub={<span className="dim">{Math.round(a.conf * 100)}% sure</span>}>{a.intent}</Row>}
+      <Row label="lead over china" hint="How far ahead US AI is, in months. Fall behind and China decides how this ends." tone={lead >= 0 ? 'good' : 'bad'}>{`${lead >= 0 ? '+' : '−'}${Math.abs(lead).toFixed(1)} mo`}</Row>
+      <Stat label="tension" hint="US–China hostility. High tension brings crises and makes deals harder." value={s.tension} word={Math.round(s.tension)} tone={s.tension >= 70 ? 'bad' : undefined} />
+      {seen(s, 'intel') && <Lever label="intelligence" hint="Your spy capability. Reveals China's intentions, red lines and hidden datacenters." value={s.intel} />}
+      {seen(s, 'intel') && <Row label="china's posture" hint="Your best guess at China's intentions. Better intelligence, better guess." sub={<span className="dim">{Math.round(a.conf * 100)}% sure</span>}>{a.intent}</Row>}
       {a.covertSeen && <div className="line bad">unexplained power use near xinjiang</div>}
     </Section>
   );
@@ -181,7 +181,7 @@ export function Deal({ s }: { s: GameState }) {
   return (
     <Section title="the deal">
       {s.dealActive
-        ? <Stat label="integrity" value={s.dealIntegrity} word={Math.round(s.dealIntegrity)} tone={s.dealIntegrity < 30 ? 'bad' : undefined} />
+        ? <Stat label="integrity" hint="How well the deal is holding. At 0 it collapses." value={s.dealIntegrity} word={Math.round(s.dealIntegrity)} tone={s.dealIntegrity < 30 ? 'bad' : undefined} />
         : <div className="line bad">no deal in force</div>}
     </Section>
   );
