@@ -41,6 +41,9 @@ export const NEGOTIATION_ITEMS: NegotiationItem[] = [
 
 /** Each term past the first two costs this much goodwill. */
 export const EXTRA_TERM_COST = 0.4;
+/** Goodwill lost per rejected offer, and per red line crossed. Talks never end on their own, but they sour. */
+export const REJECT_STRAIN = 0.35;
+export const RED_LINE_STRAIN = 1.2;
 
 export function newNegotiation(s: GameState): Negotiation {
   const idx = s.intent === 'cooperative' ? 0 : s.intent === 'opportunistic' ? 1 : 2;
@@ -54,5 +57,5 @@ export function newNegotiation(s: GameState): Negotiation {
   const byStrength = [...NEGOTIATION_ITEMS].sort((a, b) =>
     Number(redLines.includes(b.id)) - Number(redLines.includes(a.id)) || Math.abs(values[b.id]) - Math.abs(values[a.id]));
   const revealed = byStrength.slice(0, Math.min(NEGOTIATION_ITEMS.length, Math.ceil(s.intel))).map((i) => i.id);
-  return { round: 0, maxRounds: 3, values, redLines, revealed, lastResponse: null, outcome: 'pending' };
+  return { round: 0, strain: 0, values, redLines, revealed, lastResponse: null, outcome: 'pending' };
 }

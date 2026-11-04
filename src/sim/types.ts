@@ -114,7 +114,8 @@ export interface Country {
 
 export interface Negotiation {
   round: number;
-  maxRounds: number;
+  /** Goodwill lost to rejected offers; makes every later offer harder. */
+  strain: number;
   /** China's hidden valuation for each item. */
   values: Record<string, number>;
   /** Terms China will never accept. Offering one ends the talks. */

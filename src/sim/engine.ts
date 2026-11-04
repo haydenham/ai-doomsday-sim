@@ -14,7 +14,7 @@ import { DECISIONS, decisionEligible } from '../content/decisions';
 import { EVENTS, EVENT_BY_ID, eventToPending, type EventDef } from '../content/events';
 import { FLAVOR, HINTS } from '../content/ticker';
 import { pathDef } from '../content/paths';
-import { EXTRA_TERM_COST, NEGOTIATION_ITEMS, newNegotiation } from '../content/negotiation';
+import { EXTRA_TERM_COST, NEGOTIATION_ITEMS, RED_LINE_STRAIN, REJECT_STRAIN, newNegotiation } from '../content/negotiation';
 
 export const SUBSTEP = 0.01; // quarters per simulation substep (small so counters tick smoothly)
 
@@ -376,8 +376,7 @@ export function chooseFork(s: GameState, path: PathId) {
 
   switch (path) {
     case 'D':
-      s.computeBoost += 0.02; s.powerConc += 10; s.trust -= 3; s.safety = Math.max(0, s.safety - 1);
-      ticker(s, 'The President: "America will win the race to superintelligence. Nothing else matters."');
+      raceDoctrine(s);
       break;
     case 'C':
       s.safety += 1.5; s.flags.burnLead = true;
@@ -420,14 +419,30 @@ export function chooseFork(s: GameState, path: PathId) {
   return true;
 }
 
+function raceDoctrine(s: GameState) {
+  s.computeBoost += 0.02; s.powerConc += 10; s.trust -= 3; s.safety = Math.max(0, s.safety - 1);
+  ticker(s, 'The President: "America will win the race to superintelligence. Nothing else matters."');
+}
+
 // ── Negotiation Table ─────────────────────────────────────────────────────
+
+/** Walk away from Geneva and race instead. */
+export function abandonTalks(s: GameState) {
+  const n = s.negotiation;
+  if (!n || n.outcome !== 'pending') return;
+  s.negotiation = null;
+  s.tension = clamp(s.tension + 10, 0, 100);
+  s.decisions.push({ q: s.q, id: 'abandon_talks', label: 'Geneva: walked away and raced' });
+  moment(s, 'You walked away from Geneva and chose to race.', 'decision');
+  if (s.path !== 'D') { s.path = 'D'; raceDoctrine(s); }
+}
 
 export function negotiationOdds(s: GameState, offer: string[]) {
   const n = s.negotiation!;
   const base = s.intent === 'cooperative' ? 1.5 : s.intent === 'opportunistic' ? 0.4 : -0.6;
   const terms = offer.filter((id) => NEGOTIATION_ITEMS.some((i) => i.id === id && i.kind === 'term')).length;
   // The further China is behind, the more a deal appeals to it. Every extra demand costs goodwill.
-  return base + leadMonths(s) / 10 - s.tension / 40 - EXTRA_TERM_COST * Math.max(0, terms - 2)
+  return base + leadMonths(s) / 10 - s.tension / 40 - n.strain - EXTRA_TERM_COST * Math.max(0, terms - 2)
     + offer.reduce((a, id) => a + (n.values[id] ?? 0), 0);
 }
 
@@ -441,10 +456,11 @@ export function submitOffer(s: GameState, offer: string[]) {
   if (red) {
     const item = NEGOTIATION_ITEMS.find((i) => i.id === red)!;
     if (!n.revealed.includes(red)) n.revealed.push(red);
-    n.outcome = 'rejected';
-    n.lastResponse = `Beijing walks out. "${item.refusal}"`;
-    s.tension = clamp(s.tension + 20, 0, 100);
-    moment(s, `Talks with China collapsed: you crossed a red line (${item.name.toLowerCase()}).`, 'danger');
+    n.strain += RED_LINE_STRAIN;
+    n.lastResponse = `Red line. Beijing walks out of the room. "${item.refusal}"`;
+    s.tension = clamp(s.tension + 10, 0, 100);
+    if (!s.flags.redLineCrossed) moment(s, `You crossed China's red line at Geneva (${item.name.toLowerCase()}).`, 'danger');
+    s.flags.redLineCrossed = true;
     return;
   }
   const score = negotiationOdds(s, offer);
@@ -462,14 +478,9 @@ export function submitOffer(s: GameState, offer: string[]) {
   const worst = [...offer].sort((a, b) => (n.values[a] ?? 0) - (n.values[b] ?? 0))[0];
   const item = NEGOTIATION_ITEMS.find((i) => i.id === worst)!;
   if (!n.revealed.includes(worst)) n.revealed.push(worst);
-  if (n.round >= n.maxRounds) {
-    n.outcome = 'rejected';
-    n.lastResponse = `Talks collapse. Beijing's final word: "${item.refusal}"`;
-    s.tension = clamp(s.tension + 15, 0, 100);
-    moment(s, 'Talks with China collapsed.', 'danger');
-  } else {
-    n.lastResponse = `Rejected. "${item.refusal}"`;
-  }
+  n.strain += REJECT_STRAIN;
+  s.tension = clamp(s.tension + 3, 0, 100);
+  n.lastResponse = `Rejected. "${item.refusal}"`;
 }
 
 function startDeal(s: GameState, offer: string[]) {

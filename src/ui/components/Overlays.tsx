@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { GameState, PathId } from '../../sim/types';
-import { chooseFork, closeNegotiation, resolveChoice, submitOffer } from '../../sim/engine';
+import { abandonTalks, chooseFork, closeNegotiation, resolveChoice, submitOffer } from '../../sim/engine';
 import { PATHS } from '../../content/paths';
 import { NEGOTIATION_ITEMS } from '../../content/negotiation';
 import { capLevel, quarterLabel } from '../../sim/constants';
@@ -147,7 +147,8 @@ export function NegotiationBox({ s }: { s: GameState }) {
     const v = n.values[id];
     return v > 0 ? <span className="good">they want this</span> : v > -1 ? <span className="amber">they dislike this</span> : <span className="bad">they hate this</span>;
   };
-  const status = n.outcome === 'pending' ? `round ${n.round + 1}/${n.maxRounds}` : n.outcome === 'accepted' ? 'signed' : 'failed';
+  const status = n.outcome === 'pending' ? `round ${n.round + 1}` : n.outcome === 'accepted' ? 'signed' : 'failed';
+  const abandon = () => { sfx.click(); game.act((st) => abandonTalks(st)); };
   return (
     <div className="overlay">
       <div className="box box-milestone">
@@ -169,6 +170,7 @@ export function NegotiationBox({ s }: { s: GameState }) {
         </div>
         {n.lastResponse && <div className={`line ${n.outcome === 'accepted' ? 'good' : n.outcome === 'rejected' ? 'bad' : 'amber'}`}>&gt; {n.lastResponse}</div>}
         <button className="btn" onClick={go}>{n.outcome === 'pending' ? '[ make offer ]' : '[ continue ]'}</button>
+        {n.outcome === 'pending' && <button className="btn dim" onClick={abandon}>[ abandon talks · race ]</button>}
       </div>
     </div>
   );

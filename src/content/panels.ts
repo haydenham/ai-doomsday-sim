@@ -34,6 +34,6 @@ export const PANELS: PanelDef[] = [
     unlockWhen: (s) => !!s.flags.chinaAware,
     unlockHeadline: 'Beijing responds.' },
   { id: 'deal', title: 'The Deal', column: 2,
-    unlockWhen: (s) => s.dealActive || !!s.flags.dealEver,
+    unlockWhen: (s) => s.dealActive,
     unlockHeadline: 'Inspectors land in Shanghai and Nevada.' },
 ];
