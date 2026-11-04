@@ -50,7 +50,7 @@ Keys: space pauses; 1/2/3 set speed (or pick options while a decision is open); 
 src/sim/       pure, seeded, deterministic simulation (no React)
   engine.ts    newGame, step (0.01-quarter substeps), quarterBoundary, midQuarter (decision draw),
                events, Fork, negotiation, endings. advance() holds the core dynamics.
-  derived.ts   leadMonths, baseRdMult, quarterSeconds (pacing: 30s/quarter early)
+  derived.ts   leadMonths, baseRdMult, quarterSeconds (pacing: 14s/quarter early, 12–20s later)
   helpers.ts   applyFx (also sets flags.seen_<stat> so stats appear on first change), ticker, releaseOverhang
   reveal.ts    pivotal decision, what-ifs, share text
   constants.ts capability levels, key quarters (FORK_Q=8, UNPAUSE_Q=52, END_Q=60), thresholds

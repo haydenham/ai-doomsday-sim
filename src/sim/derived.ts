@@ -23,10 +23,11 @@ export const agentCopies = (s: GameState) => Math.pow(10, Math.max(0, s.cap - 4.
 
 export const quarterSeconds = (s: GameState) => {
   switch (s.phase) {
-    case 1: return 30;
-    case 2: return 28;
-    case 3: return 24 - 8 * Math.min(1, Math.max(0, (s.q - 12) / 24));
-    case 4: return 20;
-    default: return 14;
+    // Short early on, when there is little on screen; longer once there is more to watch.
+    case 1: return 14;
+    case 2: return 18;
+    case 3: return 20 - 6 * Math.min(1, Math.max(0, (s.q - 12) / 24));
+    case 4: return 16;
+    default: return 12;
   }
 };
