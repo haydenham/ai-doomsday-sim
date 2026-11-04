@@ -5,22 +5,28 @@ export const RECKONING_Q = 36; // 2036 Q1
 export const UNPAUSE_Q = 52; // 2040 Q1
 export const END_Q = 60; // hard stop, 2042 Q1
 
-// Capability is log10(effective compute in H100-equivalents).
-export const AUTO_RESEARCH = 8.0;
-export const EXPERT = 8.8;
-export const ASI = 11.5;
+// Capability is log10(effective compute in H100-equivalents) minus CAP_OFFSET (see capOf).
+// Rungs and their AI R&D speedups follow AI 2040's takeoff forecast.
+export const CAP_OFFSET = 1;
+export const AC = 8.0; // Automated Coder, 3×
+export const SAR = 8.8; // Superhuman AI Researcher, 20×
+export const TED_AI = 9.6; // Top-expert-dominating AI, 40×; the Plan A ceiling
+export const ASI = 11.5; // Superintelligence, ~10,000×
+
+// Plan A: training halts at signing and resumes Q1 2030, the ceiling reaches TED-AI around 2035,
+// then barely moves until the 2040 unpause. dealShift (quarters) moves the schedule.
+export const DEAL_RESUME_Q = 12;
+export const DEAL_CEILING: [q: number, cap: number][] = [[12, 7.4], [14, AC], [32, TED_AI], [52, TED_AI + 0.3]];
 
 export const ALIGN_LOC = 40; // below this at superintelligence = loss of control
 export const POWER_GILDED = 60;
 
-export const CAP_LEVELS: { at: number; name: string; blurb: string }[] = [
-  { at: 0, name: 'Agentic assistants', blurb: 'AI agents book travel, write code, and make plenty of mistakes.' },
-  { at: 7.2, name: 'Superhuman coder', blurb: 'AI writes software better than any human engineer.' },
-  { at: AUTO_RESEARCH, name: 'Automated AI researcher', blurb: 'AI now does most of the work of improving AI.' },
-  { at: EXPERT, name: 'Top-expert AI', blurb: 'Matches the best humans in nearly every field.' },
-  { at: 9.6, name: 'Superhuman AI researcher', blurb: 'Makes a decade of AI progress in months.' },
-  { at: 10.5, name: 'Broadly superhuman AI', blurb: 'Better than humanity at almost everything that matters.' },
-  { at: ASI, name: 'Superintelligence', blurb: 'Far beyond human understanding.' },
+export const CAP_LEVELS: { at: number; name: string; speedup: number; blurb: string }[] = [
+  { at: 0, name: 'Agents', speedup: 1, blurb: 'AI agents do real work, with plenty of mistakes.' },
+  { at: AC, name: 'Automated Coder', speedup: 3, blurb: 'AI writes all the code in AI research.' },
+  { at: SAR, name: 'Superhuman AI Researcher', speedup: 20, blurb: 'AI does AI research better than any human team.' },
+  { at: TED_AI, name: 'TED-AI', speedup: 40, blurb: 'Beats top human experts at nearly every task.' },
+  { at: ASI, name: 'Superintelligence', speedup: 10000, blurb: 'Far beyond human understanding.' },
 ];
 
 export function capLevel(cap: number) {

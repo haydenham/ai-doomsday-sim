@@ -12,7 +12,18 @@ The yellow progress bar under the top bar is gone. Time is felt through the cloc
 
 ---
 
-## Step 1. Scenario fidelity: put the timelines on AI 2040's rails
+## Step 1. Scenario fidelity: put the timelines on AI 2040's rails ✅ done
+
+**Shipped (2026-11-03):**
+- **Ladder:** Agents → Automated Coder → Superhuman AI Researcher → TED-AI → Superintelligence. The displayed AI research speed uses AI 2040's speedups.
+- **Compute:** real counts (US 50M / China 6M H100e at the start, ~1T by 2040 on Plan A), with capability = log10(effective) − 1.
+- **Plan A:** the 2029 training pause, then a scheduled ceiling. The new "Treaty review" decision moves it ±1 year.
+- **Flavor:** ticker lines are gated by real state.
+- **Takeoff speed** follows the owner's direction: no-deal paths reach ASI 1–2 years after AC; Plan A climbs slowly.
+- **Rails checks:** `npm run sim` prints median milestone dates and checks them against bands for the race, fight and Plan A bots.
+- **Compromise:** compute counts are only roughly on AI 2040's curve (~80M in early 2029 vs AI 2040's 224M), because a faster buildout would have moved every milestone date.
+
+The research and plan are kept below for reference.
 
 ### Research summary (ai-2040.com and its supplements, read 2026-11-03)
 

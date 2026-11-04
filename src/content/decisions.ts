@@ -3,6 +3,7 @@ import { releaseOverhang, shiftStance, ticker, unlockComputeTier } from '../sim/
 import { leadMonths } from '../sim/derived';
 import { rand } from '../sim/rng';
 import { newNegotiation } from './negotiation';
+import { AC } from '../sim/constants';
 
 /**
  * A decision is the game's only verb. One at a time, the clock stops, the player picks.
@@ -242,7 +243,7 @@ export const DECISIONS: DecisionDef[] = [
   {
     id: 'cap_rd', title: 'AI research cap', phases: LATE, weight: 2,
     text: 'AIs now improve AIs. Limit how much compute they get?',
-    when: (s) => s.cap >= 8,
+    when: (s) => s.cap >= AC,
     options: [
       { label: 'Cap at 25%', lean: 'safety', chips: ['g:safety +1', 'b:AI research −50%', 'b:lead shrinks', 'h:'],
         fx: { add: { rdBoost: -0.5, safety: 1, powerConc: -3 } } },
@@ -478,6 +479,17 @@ export const DECISIONS: DecisionDef[] = [
     ],
   },
   {
+    id: 'a_ceiling', title: 'Treaty review', phases: LATE, paths: ['A'], max: 3, weight: 2,
+    text: 'The labs want the ceiling raised faster.',
+    when: (s) => s.dealActive && s.pauseCap !== null && s.q >= 14,
+    options: [
+      { label: 'Raise it sooner', lean: 'race', chips: ['g:prosperity +2%', 'g:schedule +6mo', 'b:deal −6', 'h:'],
+        fx: { add: { dealShift: 2, dealIntegrity: -6 }, mul: { gdp: 1.02 } } },
+      { label: 'Slow it down', lean: 'safety', chips: ['g:safety +0.5', 'b:schedule −6mo', 'b:trust −4'],
+        fx: { add: { dealShift: -2, safety: 0.5, trust: -4 } } },
+    ],
+  },
+  {
     id: 'a_reopen', title: 'Talks', phases: LATE, paths: ['A'], max: 2, weight: 3,
     text: 'Try again with Beijing?',
     when: (s) => !s.dealActive,
@@ -502,7 +514,7 @@ export const DECISIONS: DecisionDef[] = [
     options: [
       { label: 'Strike it', lean: 'hawk', chips: ['g:covert −60%', 'b:tension +15'],
         fx: { mul: { covert: 0.4 }, add: { tension: 15 }, run: (s) => { if (s.cnPauseCap === null) s.cnRaw *= 0.8; } } },
-      { label: 'Diplomacy', lean: 'dove', chips: ['g:tension −3', 'h:'], fx: { add: { tension: -3, covert: 1e6 } } },
+      { label: 'Diplomacy', lean: 'dove', chips: ['g:tension −3', 'h:'], fx: { add: { tension: -3, covert: 2e6 } } },
     ],
   },
   {

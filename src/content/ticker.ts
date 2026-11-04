@@ -1,8 +1,10 @@
 import type { GameState, TickerItem } from '../sim/types';
+import { AC, SAR } from '../sim/constants';
 
 type Line = { text: string; when?: (s: GameState) => boolean; kind?: TickerItem['kind'] };
 
-// General flavor by phase. The ticker is where tone, humor and foreshadowing live.
+// General flavor by phase, gated by real state where the line makes a claim about it.
+// The ticker is where tone, humor and foreshadowing live.
 export const FLAVOR: Record<number, Line[]> = {
   1: [
     { text: 'Junior coding jobs down 40%.' },
@@ -13,19 +15,19 @@ export const FLAVOR: Record<number, Line[]> = {
     { text: 'Ohio town blocks a datacenter. Then un-blocks it.' },
   ],
   2: [
-    { text: 'Translators and call centers: gone.' },
+    { text: 'Translators and call centers: gone.', when: (s) => s.jobs >= 15 },
     { text: 'Pentagon opens an "Office of AI Advantage."' },
     { text: 'Survey: researchers expect superintelligence by 2035.' },
   ],
   3: [
-    { text: 'Fastest growth since the 1950s.' },
-    { text: 'Lab staff can no longer follow the models\' work.' },
-    { text: 'AI papers outnumber human ones 20 to 1.' },
+    { text: 'Fastest growth since the 1950s.', when: (s) => s.cap >= AC },
+    { text: 'Lab staff can no longer follow the models\' work.', when: (s) => s.cap >= SAR && s.capRaw - s.cap < 0.1 },
+    { text: 'AI papers outnumber human ones 20 to 1.', when: (s) => s.cap >= AC },
     { text: 'Robotics raises $400B in one quarter.' },
   ],
   4: [
-    { text: 'Life expectancy forecasts raised again.' },
-    { text: 'Global poverty is falling fast.' },
+    { text: 'Life expectancy forecasts raised again.', when: (s) => s.cap >= SAR },
+    { text: 'Global poverty is falling fast.', when: (s) => s.cap >= SAR },
     { text: 'Philosophy enrollment hits a record.' },
   ],
   5: [

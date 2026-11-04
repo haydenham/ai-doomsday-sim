@@ -1,5 +1,5 @@
 import type { GameState } from '../sim/types';
-import { AUTO_RESEARCH, EXPERT } from '../sim/constants';
+import { AC, ASI, SAR, TED_AI } from '../sim/constants';
 
 export interface ComputeTier {
   tier: number;
@@ -69,15 +69,15 @@ export const ALGO_TIERS: AlgoTier[] = [
   { tier: 6, name: 'Neuralese reasoning', plain: 'Models think in vectors, not words', multiplier: 2, minQ: 12,
     headline: 'Models now think in vectors. Humans can\'t read it.' },
   { tier: 7, name: 'Automated AI researchers', plain: 'AI does the research now', multiplier: 2.5, minQ: 12,
-    when: (s) => s.cap >= AUTO_RESEARCH,
-    headline: 'AIs now run 90% of AI research.' },
+    when: (s) => s.cap >= AC,
+    headline: 'AIs now write all the code in AI research.' },
   { tier: 8, name: 'AI-designed architectures', plain: 'AI designs the next AI', multiplier: 3, minQ: 14,
-    when: (s) => s.cap >= EXPERT,
+    when: (s) => s.cap >= SAR,
     headline: 'AI designs an architecture no human understands.' },
   { tier: 9, name: 'Beyond backpropagation', plain: 'A new way to learn, found by AI', multiplier: 4, minQ: 16,
-    when: (s) => s.cap >= 9.6,
+    when: (s) => s.cap >= TED_AI,
     headline: 'AI finds a learning rule 40× better than backprop.' },
   { tier: 10, name: 'Recursive self-improvement', plain: 'The loop closes', multiplier: 8, minQ: 18,
-    when: (s) => s.cap >= 10.5,
+    when: (s) => s.cap >= ASI - 1,
     headline: 'AI improves itself faster than we can audit.' },
 ];

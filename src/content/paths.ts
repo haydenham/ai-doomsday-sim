@@ -41,7 +41,7 @@ export const PATHS: PathDef[] = [
   {
     id: 'A', code: 'PLAN A', name: 'Verified Slowdown',
     oneLine: 'Make a deal with China. Scale slowly, together, under inspection.',
-    body: 'Pause at top-expert level until 2040. Publish research, let others catch up, and verify that no one cheats.',
+    body: 'Pause training, then scale together under a shared ceiling until 2040. Verify that no one cheats.',
     feel: 'Slow and political. Only as strong as your ability to verify.',
     available: (s) => {
       if (s.verification < 1)

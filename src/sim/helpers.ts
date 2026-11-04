@@ -36,6 +36,7 @@ const BOUNDS: Partial<Record<string, [number, number]>> = {
   openness: [0, 10],
   covert: [0, Infinity],
   growthHold: [0, 8],
+  dealShift: [-4, 4],
   rdBoost: [-0.9, 3],
   exportControls: [0, 3],
 };

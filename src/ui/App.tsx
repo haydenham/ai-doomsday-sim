@@ -136,7 +136,7 @@ export function App() {
   const fade = (id: string) => `fadeable ${faded.includes(id) ? 'faded' : ''}`;
 
   return (
-    <div className={`app ${s.rdMult > 8 && !s.ending ? 'unstable' : ''} ${s.ending ? `ending-${s.ending}` : ''}`}>
+    <div className={`app ${s.rdMult > 40 && !s.ending ? 'unstable' : ''} ${s.ending ? `ending-${s.ending}` : ''}`}>
       {pulse > 0 && <div key={pulse} className="pulse" />}
       <TopBar s={s} />
       <main className="board">

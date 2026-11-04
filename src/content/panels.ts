@@ -1,5 +1,5 @@
 import type { GameState } from '../sim/types';
-import { AUTO_RESEARCH } from '../sim/constants';
+import { AC } from '../sim/constants';
 
 export interface PanelDef {
   id: string;
@@ -22,8 +22,8 @@ export const PANELS: PanelDef[] = [
     unlockWhen: (s) => s.algoTier >= 2,
     unlockHeadline: 'Better recipes, not just more chips.' },
   { id: 'intelligence', title: 'Intelligence Explosion', column: 1,
-    unlockWhen: (s) => s.cap >= AUTO_RESEARCH,
-    unlockHeadline: 'AI is now doing AI research.' },
+    unlockWhen: (s) => s.cap >= AC,
+    unlockHeadline: 'AI now writes the code that builds AI.' },
   { id: 'frontier', title: 'Frontier', column: 1,
     unlockWhen: (s) => s.computeTier >= 6,
     unlockHeadline: 'Earth was the tutorial.' },

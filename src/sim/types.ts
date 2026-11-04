@@ -22,7 +22,8 @@ export type NumKey =
   | 'dealIntegrity'
   | 'covert'
   | 'rdBoost'
-  | 'growthHold';
+  | 'growthHold'
+  | 'dealShift';
 
 export type MulKey = 'raw' | 'algo' | 'cnRaw' | 'cnAlgo' | 'gdp' | 'covert';
 
@@ -155,6 +156,10 @@ export interface GameState {
   pauseCap: number | null;
   overhangRate: number;
   ubi: boolean;
+  /** Plan A: capability where both sides stood at signing; the ceiling never drops below it. */
+  dealFloor: number;
+  /** Plan A: quarters the ceiling schedule runs ahead (+) or behind (−). */
+  dealShift: number;
 
   // China
   cnRaw: number;

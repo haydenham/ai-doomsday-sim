@@ -1,10 +1,11 @@
 import type { EndingId, GameState, Intent, PathId, Snapshot } from './types';
 import {
-  ALIGN_LOC, ASI, AUTO_RESEARCH, END_Q, EXPERT, FORK_Q, PHASE_NAMES, POWER_GILDED, RECKONING_Q, TAKEOFF_Q, UNPAUSE_Q,
+  AC, ALIGN_LOC, ASI, DEAL_CEILING, DEAL_RESUME_Q, END_Q, FORK_Q, PHASE_NAMES, POWER_GILDED, RECKONING_Q, SAR,
+  TAKEOFF_Q, UNPAUSE_Q,
 } from './constants';
 import { chance, gauss, pick, rand, range, weighted } from './rng';
 import { applyFx, clamp, moment, ticker, unlockComputeTier } from './helpers';
-import { baseRdMult, leadMonths } from './derived';
+import { baseRdMult, capOf, leadMonths } from './derived';
 import { ALGO_TIERS } from '../content/ladders';
 import { PANELS } from '../content/panels';
 import { COUNTRIES } from '../content/countries';
@@ -16,20 +17,29 @@ import { NEGOTIATION_ITEMS, newNegotiation } from '../content/negotiation';
 
 export const SUBSTEP = 0.01; // quarters per simulation substep (small so counters tick smoothly)
 
+// China runs one national project on most of its chips and fast-follows US algorithms (theft, distillation),
+// so a Chinese chip counts for more at the frontier than a US chip split across rival labs.
+const CN_EFFICIENCY = 5;
+// A 40× research speedup doesn't mean 40× progress: experiments still need compute.
+const RD_ELASTICITY = 0.9;
+const ALGO_BASE = 0.024;
+
 export function newGame(seed: number): GameState {
   const s = { rngState: seed } as GameState;
   const intent = weighted<Intent>(s, ['cooperative', 'opportunistic', 'racing'], (i) =>
     i === 'cooperative' ? 0.3 : i === 'opportunistic' ? 0.45 : 0.25)!;
-  const raw = 5e6;
-  const cnRaw = 3e6;
-  const cnAlgo = 0.8;
+  // AI 2040's compute supplement: ~50M US vs ~6M Chinese H100e in early 2027.
+  const raw = 5e7;
+  const cnRaw = 6e6;
+  const cnAlgo = 0.8 * CN_EFFICIENCY;
   Object.assign(s, {
     seed, t: 0, q: 0, phase: 1, path: null,
-    gdp: 31, cumGdp: 0, raw, algo: 1, capRaw: Math.log10(raw), cap: Math.log10(raw),
+    gdp: 31, cumGdp: 0, raw, algo: 1, capRaw: capOf(raw, 1), cap: capOf(raw, 1),
     trust: 52, powerConc: 30, tension: 20, jobs: 0, rdMult: 1,
     safety: 0, verification: 0, intel: 0, security: 1, openness: 0, deployment: 0, computeBoost: 0,
-    exportControls: 0, rdBoost: 0, growthHold: 0, pauseCap: null, overhangRate: 0.6, ubi: false,
-    cnRaw, cnAlgo, cnCap: Math.log10(cnRaw * cnAlgo), cnRdMult: 1, cnPauseCap: null, covert: 0,
+    exportControls: 0, rdBoost: 0, growthHold: 0, pauseCap: null, overhangRate: 1, ubi: false,
+    dealFloor: 0, dealShift: 0,
+    cnRaw, cnAlgo, cnCap: capOf(cnRaw, cnAlgo), cnRdMult: 1, cnPauseCap: null, covert: 0,
     cnAlignment: range(s, 25, 55), intent,
     alignment: range(s, 56, 68), difficulty: range(s, 0.75, 1.35), timeline: range(s, 0.85, 1.2),
     readout: 0, readoutSigma: 24,
@@ -78,16 +88,18 @@ function advance(s: GameState, dt: number) {
   // US compute and algorithms
   const rdFactor = clamp(1 + s.rdBoost + (s.path === 'D' ? 0.3 : 0), 0.1, 4);
   s.rdMult = 1 + (baseRdMult(s.cap) - 1) * rdFactor;
-  let rawG = 0.05 + s.computeBoost + (s.cap >= EXPERT ? 0.04 : 0) + (s.cap >= 10 ? 0.08 : 0);
+  let rawG = 0.05 + s.computeBoost + (s.cap >= SAR ? 0.04 : 0) + (s.cap >= 10 ? 0.08 : 0);
   if (moratorium) rawG = Math.min(rawG, 0.01);
-  let algoG = 0.035 * s.timeline * s.rdMult * (s.cap < AUTO_RESEARCH ? clamp(1 + 0.5 * s.rdBoost, 0.5, 2) : 1);
+  let algoG = ALGO_BASE * s.timeline * Math.pow(s.rdMult, RD_ELASTICITY) * (s.cap < AC ? clamp(1 + 0.5 * s.rdBoost, 0.5, 2) : 1);
   if (moratorium) algoG = 0;
-  if (s.pauseCap !== null) algoG *= 0.35;
+  // A deal limits capability by its ceiling, not by slowing research; a moratorium slows research itself.
+  if (s.pauseCap !== null && !s.dealActive) algoG *= 0.35;
   if (s.flags.burnLead && lead > 3) algoG *= 0.7;
   if (hold) { rawG = 0; algoG = 0; }
   s.raw *= Math.pow(1 + Math.max(-0.05, rawG), dt);
   s.algo *= Math.pow(1 + algoG, dt);
-  s.capRaw = Math.log10(s.raw * s.algo);
+  s.capRaw = capOf(s.raw, s.algo);
+  if (s.dealActive && s.pauseCap !== null) s.pauseCap = s.cnPauseCap = dealCeiling(s);
 
   const prevCap = s.cap;
   const target = s.pauseCap !== null ? Math.min(s.capRaw, s.pauseCap) : s.capRaw;
@@ -99,27 +111,27 @@ function advance(s: GameState, dt: number) {
   const pathMul = s.path === 'D' ? 1.25 : s.path === 'C' ? 0.9 : 1;
   const neuralese = s.algoTier >= 6 ? 1.15 : 1;
   const shield = Math.max(0.35, 1 - 0.055 * s.safety);
-  const loss = dC * 5 * s.difficulty * (0.3 + 2.5 * rate) * pathMul * neuralese * shield;
+  const loss = dC * 5 * s.difficulty * (0.3 + 1.0 * rate) * pathMul * neuralese * shield;
   const gain = dt * 0.45 * s.safety * Math.max(0, 1 - s.alignment / 110) + (rate < 0.02 ? dt * 0.1 : 0);
   s.alignment = clamp(s.alignment - loss + gain, 0, 100);
 
   // China
   const desperation = cnDesperation(s);
-  let cnRawG = 0.045 + 0.03 * desperation - 0.015 * s.exportControls + (s.cnCap >= EXPERT ? 0.04 : 0);
+  let cnRawG = 0.045 + 0.03 * desperation - 0.015 * s.exportControls + (s.cnCap >= SAR ? 0.04 : 0);
   if (s.cnPauseCap !== null && s.flags.moratorium) cnRawG = Math.min(cnRawG, 0.01);
   s.cnRaw *= Math.pow(1 + cnRawG, dt);
   s.cnRdMult = baseRdMult(s.cnCap) * (s.intent === 'racing' ? 1.1 : 1);
-  let cnAlgoG = 0.033 * s.timeline * s.cnRdMult;
-  if (s.cnPauseCap !== null) cnAlgoG *= s.flags.moratorium ? 0 : 0.35;
+  let cnAlgoG = 0.033 * s.timeline * Math.pow(s.cnRdMult, RD_ELASTICITY);
+  if (s.cnPauseCap !== null && !s.dealActive) cnAlgoG *= s.flags.moratorium ? 0 : 0.35;
   const diffusion = clamp(0.07 + 0.03 * s.openness - 0.012 * s.security, 0.01, 0.4);
-  const gap = Math.max(0, Math.log(s.algo) - Math.log(s.cnAlgo));
+  const gap = Math.max(0, Math.log(s.algo * CN_EFFICIENCY) - Math.log(s.cnAlgo));
   s.cnAlgo *= Math.exp(dt * (Math.log(1 + cnAlgoG) + diffusion * gap));
   if (s.covert > 0) s.covert *= Math.pow(1.12, dt);
-  const cnCapRaw = Math.log10(s.cnRaw * s.cnAlgo);
+  const cnCapRaw = capOf(s.cnRaw, s.cnAlgo);
   const declared = s.cnPauseCap !== null ? Math.min(cnCapRaw, s.cnPauseCap) : cnCapRaw;
   const cnTarget = declared + (s.covert > 0 ? Math.log10(1 + s.covert / s.cnRaw) : 0);
   // Under a deal both sides lift the cap at the same agreed pace.
-  const cnRate = s.dealActive ? s.overhangRate : 0.6;
+  const cnRate = s.dealActive ? s.overhangRate : 1;
   s.cnCap = cnTarget > s.cnCap ? Math.min(cnTarget, s.cnCap + cnRate * dt) : cnTarget;
 
   // Economy
@@ -129,6 +141,18 @@ function advance(s: GameState, dt: number) {
   if (s.ubi) g *= 0.97;
   s.gdp *= Math.pow(1 + g, dt);
   s.jobs = clamp((s.cap - 6.6) * 12 + s.deployment * 1.5, 0, 95);
+}
+
+/** Plan A's shared ceiling at the current time. Never below where both sides stood at signing. */
+export function dealCeiling(s: GameState) {
+  if (s.t < DEAL_RESUME_Q) return s.dealFloor;
+  const t = s.t + s.dealShift;
+  let cap = DEAL_CEILING[DEAL_CEILING.length - 1][1];
+  for (let i = 0; i < DEAL_CEILING.length - 1; i++) {
+    const [[q0, c0], [q1, c1]] = [DEAL_CEILING[i], DEAL_CEILING[i + 1]];
+    if (t < q1) { cap = c0 + (c1 - c0) * clamp((t - q0) / (q1 - q0), 0, 1); break; }
+  }
+  return Math.max(s.dealFloor, cap);
 }
 
 function cnDesperation(s: GameState) {
@@ -148,7 +172,7 @@ function quarterBoundary(s: GameState) {
   // Politics
   s.trust = clamp(s.trust + (50 - s.trust) * 0.04 - s.jobs * 0.035 * (s.ubi ? 0.3 : 1) - (s.flags.moratorium ? 0.4 : 0), 0, 100);
   s.tension = clamp(s.tension - 2 + cnDesperation(s) * 3, 0, 100);
-  const pcDrift = (s.cap >= AUTO_RESEARCH ? 0.5 : 0) * (s.path === 'B' || s.path === 'D' ? 1.6 : 1) - 0.12 * s.openness;
+  const pcDrift = (s.cap >= AC ? 0.5 : 0) * (s.path === 'B' || s.path === 'D' ? 1.6 : 1) - 0.12 * s.openness;
   s.powerConc = clamp(s.powerConc + pcDrift, 0, 100);
 
   chinaActs(s);
@@ -200,7 +224,7 @@ function algoBreakthrough(s: GameState) {
   const next = ALGO_TIERS[s.algoTier];
   if (!next || s.flags.moratorium || s.growthHold > 0) return;
   if (s.q < next.minQ || (next.when && !next.when(s))) return;
-  const p = clamp((0.3 + 0.15 * s.rdBoost) * s.timeline * (s.pauseCap !== null ? 0.4 : 1) * (next.when ? 1.8 : 1), 0.05, 0.9);
+  const p = clamp((0.3 + 0.15 * s.rdBoost) * s.timeline * (s.pauseCap !== null && !s.dealActive ? 0.4 : 1) * (next.when ? 1.8 : 1), 0.05, 0.9);
   if (!chance(s, p)) return;
   s.algoTier = next.tier;
   s.algo *= next.multiplier;
@@ -235,10 +259,10 @@ function detectMoments(s: GameState) {
   const once = (key: string, cond: boolean, text: string, kind: 'hidden' | 'danger' | 'info') => {
     if (cond && !s.flags[key]) { s.flags[key] = true; moment(s, text, kind); }
   };
-  once('m_auto', s.cap >= AUTO_RESEARCH, 'AI began doing most AI research.', 'info');
-  once('m_deceptive', s.cap >= AUTO_RESEARCH && s.alignment < 50,
+  once('m_auto', s.cap >= AC, 'AI took over the coding in AI research.', 'info');
+  once('m_deceptive', s.cap >= AC && s.alignment < 50,
     'Your models became deceptively aligned: they learned to pass evals instead of sharing your goals.', 'hidden');
-  once('m_ponr', s.cap >= AUTO_RESEARCH && s.alignment < ALIGN_LOC,
+  once('m_ponr', s.cap >= AC && s.alignment < ALIGN_LOC,
     'Point of no return: true alignment fell below 40%.', 'danger');
   once('m_evalgap', s.readout - s.alignment > 25,
     `Your evals overstated alignment by ${Math.round(s.readout - s.alignment)} points.`, 'hidden');
@@ -435,12 +459,12 @@ function startDeal(s: GameState, offer: string[]) {
     applyFx(s, it.fx);
   }
   s.dealIntegrity = clamp(integrity, 0, 100);
-  s.pauseCap = Math.max(EXPERT, s.cap);
-  s.cnPauseCap = Math.max(EXPERT, s.cnCap);
+  s.dealFloor = Math.max(s.cap, s.cnCap);
+  s.pauseCap = s.cnPauseCap = dealCeiling(s);
   for (const c of s.countries) if (c.id === 'us' || c.id === 'cn') c.inDeal = true;
   s.trust = clamp(s.trust + 6, 0, 100);
   s.powerConc = clamp(s.powerConc - 8, 0, 100);
-  ticker(s, 'Deal signed in Geneva: both powers will cap AI at top-expert level and let inspectors in.', 'good');
+  ticker(s, 'Deal signed in Geneva. Frontier training halts while inspectors deploy.', 'good');
   moment(s, `The US and China signed a verified slowdown deal (integrity ${Math.round(s.dealIntegrity)}%).`, 'decision');
 }
 
@@ -480,7 +504,7 @@ function checkEnding(s: GameState) {
 export function determineEnding(s: GameState): EndingId {
   if (s.asiBy === 'us') return s.alignment < ALIGN_LOC ? 'loc' : s.powerConc >= POWER_GILDED ? 'gilded' : 'flourishing';
   if (s.asiBy === 'cn') return s.cnAlignment < ALIGN_LOC ? 'loc' : 'gilded';
-  return (s.path === 'S' && s.flags.moratorium) || s.cap < EXPERT ? 'stagnation' : 'coldwar';
+  return (s.path === 'S' && s.flags.moratorium) || s.cap < SAR ? 'stagnation' : 'coldwar';
 }
 
 function finalize(s: GameState) {
@@ -504,7 +528,7 @@ function snapshot(s: GameState): Snapshot {
 
 function flavorTicker(s: GameState) {
   const recent = new Set(s.ticker.slice(-40).map((t) => t.text));
-  const pool = (FLAVOR[s.phase] ?? []).filter((l) => !recent.has(l.text));
+  const pool = (FLAVOR[s.phase] ?? []).filter((l) => (!l.when || l.when(s)) && !recent.has(l.text));
   if (pool.length && chance(s, 0.35)) ticker(s, pick(s, pool).text);
   const hints = HINTS.filter((h) => (!h.when || h.when(s)) && !recent.has(h.text));
   if (hints.length && chance(s, 0.3)) {

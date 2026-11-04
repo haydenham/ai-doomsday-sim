@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { GameState } from '../../sim/types';
 import { ENDINGS } from '../../content/endings';
-import { ALIGN_LOC, ASI, AUTO_RESEARCH, EXPERT, quarterLabel } from '../../sim/constants';
+import { AC, ALIGN_LOC, ASI, TED_AI, quarterLabel } from '../../sim/constants';
 import { difficultyLabel, peakCovert as peakCovertOf, pivotalDecision, score, shareText, timelineLabel, whatIfs } from '../../sim/reveal';
 import { game } from '../../store/game';
 import { randomSeed } from '../../sim/rng';
@@ -58,7 +58,7 @@ export function Reveal({ s }: { s: GameState }) {
               { label: 'United States', values: s.history.map((h) => h.cap), color: 'var(--us)', width: 2.5 },
               { label: 'China', values: s.history.map((h) => h.cnCap), color: 'var(--cn)' },
             ]}
-            hlines={[{ y: AUTO_RESEARCH, label: 'Automated AI research' }, { y: EXPERT, label: 'Top-expert AI' }, { y: ASI, label: 'Superintelligence' }]}
+            hlines={[{ y: AC, label: 'Automated Coder' }, { y: TED_AI, label: 'TED-AI' }, { y: ASI, label: 'Superintelligence' }]}
           />
           <div className="legend"><span><i className="line us" /> United States</span><span><i className="line cn" /> China (including covert compute)</span></div>
         </section>

@@ -4,7 +4,7 @@ declare const process: { argv: string[] };
 import { chooseFork, closeNegotiation, newGame, resolveChoice, step, submitOffer } from '../src/sim/engine';
 import { PATHS } from '../src/content/paths';
 import { ENDINGS } from '../src/content/endings';
-import { quarterLabel } from '../src/sim/constants';
+import { AC, ASI, SAR, TED_AI, START_YEAR, quarterLabel } from '../src/sim/constants';
 import type { GameState, Lean, PathId } from '../src/sim/types';
 import { rand } from '../src/sim/rng';
 
@@ -16,15 +16,24 @@ interface Bot {
   /** Force a specific option index for a decision id. */
   force?: Record<string, number>;
   random?: boolean;
+  /** AI 2040 rails: median year each rung is reached must fall in [lo, hi]. */
+  rails?: Partial<Record<Rung, [number, number]>>;
 }
 
+type Rung = 'AC' | 'SAR' | 'TED' | 'ASI';
+const RUNGS: [Rung, number][] = [['AC', AC], ['SAR', SAR], ['TED', TED_AI], ['ASI', ASI]];
+// No deal: AC ~early 2030, ASI ~1 year later (80% CI: 2 months to 5 years).
+const NO_DEAL = { AC: [2029.5, 2030.75], ASI: [2030.75, 2033] } as Bot['rails'];
+
 const BOTS: Bot[] = [
-  { name: 'race', path: 'D', prefer: ['race', 'power', 'hawk'] },
+  { name: 'race', path: 'D', prefer: ['race', 'power', 'hawk'], rails: NO_DEAL },
   { name: 'race-careful', path: 'D', prefer: ['safety', 'race', 'people'] },
   { name: 'burn-lead', path: 'C', prefer: ['safety', 'people', 'dove'] },
   { name: 'burn-naive', path: 'C', prefer: ['race', 'power', 'hawk'] },
-  { name: 'fight', path: 'B', prefer: ['hawk', 'race', 'power'] },
-  { name: 'planA', path: 'A', prefer: ['safety', 'dove', 'people'] },
+  { name: 'fight', path: 'B', prefer: ['hawk', 'race', 'power'], rails: NO_DEAL },
+  // Plan A: pause in 2029, AC ~mid-2030, TED-AI ~2035, handoff after 2040.
+  { name: 'planA', path: 'A', prefer: ['safety', 'dove', 'people'],
+    rails: { AC: [2030.25, 2031.5], TED: [2034, 2036.5], ASI: [2040, 2043] } },
   { name: 'planA-naive', path: 'A', prefer: ['race', 'power', 'dove'] },
   { name: 'shutdown', path: 'S', prefer: ['safety', 'people', 'dove'] },
   { name: 'shutdown-lift', path: 'S', prefer: ['safety', 'people', 'dove'], force: { s_lift: 0 } },
@@ -76,9 +85,14 @@ const runs = Number(process.argv[2] ?? 300);
 const only = process.argv[3];
 for (const bot of BOTS.filter((b) => !only || b.name === only)) {
   const endings: Record<string, number> = {};
+  const reached: Record<Rung, number[]> = { AC: [], SAR: [], TED: [], ASI: [] };
   let endQ = 0, align = 0, score = 0, asi = 0, readoutPanel = 0, pathOk = 0, deal = 0, intel = 0, decisions = 0;
   for (let r = 0; r < runs; r++) {
     const s = runOne(1000 + r, bot, only !== undefined && r === 0);
+    for (const [rung, cap] of RUNGS) {
+      const h = s.history.find((x) => x.cap >= cap);
+      if (h) reached[rung].push(START_YEAR + h.q / 4);
+    }
     endings[s.ending ?? 'none'] = (endings[s.ending ?? 'none'] ?? 0) + 1;
     endQ += s.endQ ?? s.q;
     align += s.alignment;
@@ -95,5 +109,17 @@ for (const bot of BOTS.filter((b) => !only || b.name === only)) {
   console.log(`\n== ${bot.name} (${runs} runs) ==`);
   console.log('  endings:', Object.entries(endings).map(([k, v]) => `${k} ${pct(v)}`).join(', '));
   console.log(`  avg end ${quarterLabel(Math.round(endQ / runs))} | avg ASI ${asiRuns ? quarterLabel(Math.round(asi / Math.max(1, asiRuns))) : '-'} | final alignment ${(align / runs).toFixed(0)} | score ${(score / runs).toFixed(0)}`);
+  const median = (xs: number[]) => xs.length ? [...xs].sort((a, b) => a - b)[xs.length >> 1] : null;
+  console.log('  milestones:', RUNGS.map(([r]) => {
+    const m = median(reached[r]);
+    return `${r} ${m === null ? '-' : m.toFixed(2)}${m !== null && reached[r].length < runs ? ` (${pct(reached[r].length)})` : ''}`;
+  }).join(' · '));
+  if (bot.rails) {
+    const fails = Object.entries(bot.rails).filter(([r, [lo, hi]]) => {
+      const m = median(reached[r as Rung]);
+      return m === null || m < lo || m > hi;
+    }).map(([r, [lo, hi]]) => `${r} outside ${lo}–${hi}`);
+    console.log(`  rails: ${fails.length ? `FAIL (${fails.join(', ')})` : 'ok'}`);
+  }
   console.log(`  readout panel ${pct(readoutPanel)} | intelligence panel ${pct(intel)} | got path ${pct(pathOk)} | deal alive at end ${pct(deal)} | decisions/run ${(decisions / runs).toFixed(0)}`);
 }

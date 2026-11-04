@@ -1,6 +1,7 @@
 import type { Choice, Fx, GameState, PendingEvent } from '../sim/types';
 import { moment, releaseOverhang, shiftStance, ticker } from '../sim/helpers';
 import { leadMonths } from '../sim/derived';
+import { AC, DEAL_RESUME_Q, TED_AI } from '../sim/constants';
 import { rand } from '../sim/rng';
 
 export interface EventDef {
@@ -177,9 +178,9 @@ export const EVENTS: EventDef[] = [
     ],
   },
   {
-    id: 'auto_research', kind: 'ai', when: (s) => s.cap >= 8.0, chance: 1,
-    title: 'The researchers are AIs now',
-    body: '50,000 AI researchers. 30× human speed. The humans read summaries.',
+    id: 'auto_research', kind: 'ai', when: (s) => s.cap >= AC, chance: 1,
+    title: 'Automated Coder',
+    body: 'AI writes all the code now. Research runs 3× faster. The humans pick experiments.',
     choices: [{ label: 'Continue', chips: [] }],
   },
   {
@@ -220,6 +221,14 @@ export const EVENTS: EventDef[] = [
     onFire: { moment: 'China broke out of the deal using covert compute.' },
   },
   {
+    id: 'deal_resume', kind: 'milestone', when: (s) => s.dealActive && s.q >= DEAL_RESUME_Q, chance: 1,
+    fx: { headline: 'Training resumes under the treaty ceiling.' },
+  },
+  {
+    id: 'deal_plateau', when: (s) => s.dealActive && s.pauseCap !== null && s.cap >= TED_AI, chance: 1,
+    fx: { headline: 'The treaty ceiling flattens. Scaling slows to a crawl until 2040.' },
+  },
+  {
     id: 'deal_breakdown', once: true, when: (s) => s.dealActive && s.dealIntegrity <= 0, chance: 1,
     fx: { run: (s) => collapseDeal(s, 'The deal collapses. Inspectors are expelled from both countries.') },
   },
@@ -245,7 +254,7 @@ export const EVENTS: EventDef[] = [
     choices: [
       { label: 'Seize it', lean: 'hawk', chips: ['g:trust +3', 'b:tension +5'], fx: { add: { trust: 3, tension: 5 } } },
       { label: 'Ignore it', lean: 'dove', chips: ['g:tension −2', 'h:'],
-        fx: { add: { covert: 2e6, tension: -2 }, run: (s) => shiftStance(s, 'row', -0.1) } },
+        fx: { add: { covert: 4e6, tension: -2 }, run: (s) => shiftStance(s, 'row', -0.1) } },
     ],
   },
   {
