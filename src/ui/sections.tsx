@@ -1,6 +1,9 @@
-import type { GameState, Intent } from '../sim/types';
+import type { AllocKey, GameState, Intent } from '../sim/types';
 import { capLevel, quarterLabel } from '../sim/constants';
 import { agentCopies, leadMonths } from '../sim/derived';
+import { ALLOC_STEP, allocMax, allowanceLeft, inControl, shiftAlloc } from '../sim/alloc';
+import { game } from '../store/game';
+import { sfx } from './audio';
 import { rand } from '../sim/rng';
 import { ALGO_TIERS, COMPUTE_TIERS } from '../content/ladders';
 import { AI_DISCOVERIES } from '../content/ticker';
@@ -86,6 +89,35 @@ export function Intelligence({ s }: { s: GameState }) {
       <Row label="AI researchers">{bigStr(agentCopies(s), 1e3)}</Row>
       <Row label="research by AI">{`${share.toFixed(2)}%`}</Row>
       <div className="ai-stream">{lines.map((l, i) => <div key={i} style={{ opacity: 1 - i * 0.22 }}>{l}</div>)}</div>
+    </Section>
+  );
+}
+
+const ALLOC_ROWS: { k: AllocKey; label: string; shown: (s: GameState) => boolean }[] = [
+  { k: 'cap', label: 'capabilities', shown: () => true },
+  { k: 'safety', label: 'safety', shown: () => true },
+  { k: 'deploy', label: 'deployment', shown: (s) => s.jobs >= 5 },
+  { k: 'security', label: 'security', shown: (s) => s.firedEvents.weight_theft !== undefined || s.q >= 8 },
+];
+
+/** The primary control. The labs own the split until you nationalize them. */
+export function Allocation({ s }: { s: GameState }) {
+  const left = allowanceLeft(s);
+  const can = left >= ALLOC_STEP - 1e-9;
+  const move = (k: AllocKey, dir: 1 | -1) => { if (game.act((st) => shiftAlloc(st, k, dir))) sfx.click(); };
+  return (
+    <Section title="compute allocation">
+      <div className="line dim">{inControl(s) ? 'yours to set' : can ? 'labs decide · 1 nudge left' : 'labs decide · nudged'}</div>
+      {ALLOC_ROWS.filter((r) => r.shown(s)).map(({ k, label }) => (
+        <div key={k} className="alloc-row">
+          <Stat label={label} value={s.alloc[k]} max={1}
+            word={<>{Math.round(s.alloc[k] * 100)}%{allocMax(s, k) < 1 && <span className="dim"> ≤{Math.round(allocMax(s, k) * 100)}</span>}</>} />
+          <span className="alloc-btns">
+            <button disabled={!can || s.alloc[k] <= 1e-9} onClick={() => move(k, -1)}>◂</button>
+            <button disabled={!can || s.alloc[k] >= allocMax(s, k) - 1e-9} onClick={() => move(k, 1)}>▸</button>
+          </span>
+        </div>
+      ))}
     </Section>
   );
 }

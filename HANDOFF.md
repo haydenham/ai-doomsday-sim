@@ -10,10 +10,10 @@ Playable local prototype: a real-time, decision-driven strategy game about US AI
 
 - **v1** (dashboard plus a hand of policy cards with political capital) was **rejected** as cluttered, wordy and not gamified.
 - **v2** (current) was received very well ("wayyyy better"). Terminal UI, one decision at a time, slow reveal.
-- **Steps 0–2 of the roadmap are done:** the timer bar was removed (0), timelines follow AI 2040 (1), and metrics share one bar-plus-word style (2).
+- **Steps 0–3 of the roadmap are done:** the timer bar was removed (0), timelines follow AI 2040 (1), metrics share one bar-plus-word style (2), and **compute allocation** is the primary control (3, `sim/alloc.ts`).
 - **Waiting on the owner:**
-  - a playtest of Steps 1–2;
-  - which **primary control** to build in Step 3. Recommended: compute allocation across capabilities / safety / deployment / security.
+  - a playtest of the compute allocation dial;
+  - go-ahead on **Step 3b, emergent paths** (the owner's idea: drop the plan menu; the path emerges from play).
 
 ## Run
 

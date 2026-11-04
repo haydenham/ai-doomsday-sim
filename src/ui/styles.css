@@ -75,6 +75,9 @@ input { font: inherit; }
 .row.fresh .row-label { color: var(--amber); }
 .flash { animation: flash 1s ease; }
 @keyframes flash { 0%, 40% { color: var(--amber); text-shadow: 0 0 10px var(--amber); } 100% { text-shadow: none; } }
+.alloc-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: baseline; }
+.alloc-btns button { color: var(--dim); padding: 0 6px; font-size: 15px; }
+.alloc-btns button:disabled { color: var(--faint); cursor: default; }
 .meter { color: var(--fg); letter-spacing: -1px; font-size: 12px; }
 .meter-off { color: var(--faint); }
 .unstable .row-value { animation: jitter .2s infinite steps(2); }

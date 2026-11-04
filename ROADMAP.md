@@ -99,7 +99,36 @@ Running list. ✅ = fixed, 📋 = folded into a step below, ❓ = awaiting the o
 
 ---
 
-## Step 3. The primary control
+## Step 3. The primary control ✅ done (compute allocation)
+
+**Shipped (2026-11-03):**
+- **The control:** a four-row panel (capabilities, safety, deployment, security) appears in Q3 2027. Deployment shows up once jobs start being automated; security after a theft scare or from 2029.
+- **Who owns it:** the labs. They pull the split 25% of the way back to their preference each quarter (70/10/15/5; 85% capabilities on Plan D), and you get one 10% nudge per quarter. Plan C halves the pull. Nationalizing gives you full control (power 80+).
+- **What each share does:**
+  - capabilities scales algorithmic progress (squared, relative to the labs' 70%);
+  - safety research grows with the safety share × a capability-dependent yield (AI does the alignment work);
+  - deployment scales economic growth, trust and jobs;
+  - security builds lab security, and verification during a deal.
+- **Laws and limits:** the moratorium forces capabilities to 0. The 25% AI research law is now a ceiling on the capabilities row.
+- **Folded into the dial:** `alignment_grants`, `rd_credit`, `lab_security`, `c_spend`.
+- **Sim:** added fixed-split bots (all capabilities, all safety, balanced, labs default) and a reactive bot on paths A, C and D. Implemented the dial's decisions in `sim/alloc.ts`.
+
+**Results (150 seeds, safe decisions):**
+
+| Path | Push capabilities | Push safety | Balanced | Labs default | Reactive |
+|---|---|---|---|---|---|
+| A | 82% | 80% | 85% | 87% | **91%** |
+| C | 81% | 0% (China first) | 28% | 77% | **81%** |
+| D | 2% | **41%** | 31% | 2% | 39% |
+
+- No fixed split wins on every path, and over-caution now loses the way AI 2040 says it should: China reaches superintelligence first.
+- The reactive bot is best or tied on A and C, and competitive on D.
+- **Left for Step 5:**
+  - Burn the Lead with a safety-heavy split loses to China 85% of the time; the halved pull lets you overshoot.
+  - Plan D's best play is still "push safety".
+
+The original options and spec are kept below for reference.
+
 
 Plague Inc's core loop is shaping your pathogen. Universal Paperclips has a few panels you manage continuously. Decisions alone are reactive, so the player needs one thing they *steer*.
 
@@ -181,6 +210,24 @@ security      ▮▯▯▯▯▯▯▯▯▯   5%   ◂ ▸
 **Sim.** Add allocation bots: fixed splits (all-capabilities, all-safety, balanced) and a reactive bot that steers by readout and lead. Success criterion: **no fixed split is best on every path, and the reactive bot beats all fixed splits.**
 
 ---
+
+## Step 3b. Emergent paths (owner idea, 2026-11-03)
+
+Remove the 2029 plan menu. The scenario you end up in should emerge from what you do, not from picking a plan:
+- Sign a deal at Geneva and you're living Plan A.
+- Race with nationalized labs and you're living Plan D.
+- Win a moratorium and you're living Plan S.
+
+**Groundwork already in place:** the dial reacts to *situations* (a deal in force, a moratorium, nationalization), not plan ids.
+
+**What changes:**
+- **The Fork** becomes a set of decisions and events, e.g. "Beijing proposes talks", "Moratorium push", "Race doctrine".
+- **Path-gated content** (`paths: [...]` on decisions, the `s.path` checks in the engine) gets regated on state flags.
+- **The Reveal** names the path you ended up on.
+
+**Open questions:**
+- Can you drift between paths, e.g. from a collapsed deal into a race? (Probably yes. That's the interesting part.)
+- What triggers the offers?
 
 ## Step 4. Interactive map
 

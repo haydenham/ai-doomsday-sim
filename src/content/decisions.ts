@@ -1,9 +1,9 @@
 import type { Choice, GameState, PathId, Phase } from '../sim/types';
 import { concentratePower, releaseOverhang, shiftStance, ticker, unlockComputeTier } from '../sim/helpers';
-import { leadMonths } from '../sim/derived';
 import { rand } from '../sim/rng';
 import { newNegotiation } from './negotiation';
 import { AC } from '../sim/constants';
+import { enforceAlloc } from '../sim/alloc';
 
 /**
  * A decision is the game's only verb. One at a time, the clock stops, the player picks.
@@ -53,16 +53,6 @@ export const DECISIONS: DecisionDef[] = [
     ],
   },
   {
-    id: 'alignment_grants', title: 'Alignment grants', phases: ALL, max: 6, weight: 1.6,
-    text: 'Researchers want $2B to study whether models can be trusted.',
-    options: [
-      { label: 'Fund them', lean: 'safety', chips: ['g:safety +1', 'b:prosperity −0.5%', 'h:'],
-        fx: { add: { safety: 1 }, mul: { gdp: 0.995 } } },
-      { label: 'Buy chips instead', lean: 'race', chips: ['g:compute +5%', 'h:'],
-        fx: { mul: { raw: 1.05 } } },
-    ],
-  },
-  {
     id: 'exports', title: 'Chip sales to China', phases: EARLY, weight: 2,
     text: 'China is buying every advanced chip it can get.',
     when: (s) => s.q >= 2,
@@ -96,17 +86,6 @@ export const DECISIONS: DecisionDef[] = [
     ],
   },
   {
-    id: 'lab_security', title: 'Lab security', phases: ALL,
-    text: 'Model weights are guarded like a startup, not a state secret.',
-    when: (s) => s.q >= 3,
-    options: [
-      { label: 'Lock it down', lean: 'safety', chips: ['g:security +3', 'b:compute growth −'],
-        fx: { add: { security: 3, computeBoost: -0.004 } } },
-      { label: 'Move fast', lean: 'race', chips: ['g:compute growth +', 'b:theft risk'],
-        fx: { add: { computeBoost: 0.004 } } },
-    ],
-  },
-  {
     id: 'chip_tracking', title: 'Chip tracking', phases: ALL,
     text: 'Every advanced chip could report its location.',
     when: (s) => s.q >= 4,
@@ -115,17 +94,6 @@ export const DECISIONS: DecisionDef[] = [
         fx: { add: { verification: 1, trust: -2 }, flags: { chipTracking: true } } },
       { label: 'Too invasive', lean: 'people', chips: ['g:trust +2', 'h:'],
         fx: { add: { trust: 2 } } },
-    ],
-  },
-  {
-    id: 'rd_credit', title: 'R&D tax credit', phases: ALL, max: 2,
-    text: 'Subsidize the labs to go faster.',
-    when: (s) => s.q >= 2,
-    options: [
-      { label: 'Pass it', lean: 'race', chips: ['g:compute growth +', 'g:breakthroughs +', 'b:power +4', 'h:'],
-        fx: { add: { computeBoost: 0.012, powerConc: 4, rdBoost: 0.1 } } },
-      { label: 'Refuse', lean: 'people', chips: ['g:power −2', 'b:compute growth −'],
-        fx: { add: { powerConc: -2, computeBoost: -0.003 } } },
     ],
   },
   {
@@ -242,11 +210,12 @@ export const DECISIONS: DecisionDef[] = [
   // ── Post-Fork, any path ───────────────────────────────────────────────
   {
     id: 'cap_rd', title: 'AI research cap', phases: LATE, weight: 2,
-    text: 'AIs now improve AIs. Limit how much compute they get?',
+    text: 'AIs now improve AIs. Make it law: capabilities get at most 25% of compute?',
     when: (s) => s.cap >= AC,
     options: [
-      { label: 'Cap at 25%', lean: 'safety', chips: ['g:safety +1', 'b:AI research −50%', 'b:lead shrinks', 'h:'],
-        fx: { add: { rdBoost: -0.5, safety: 1, powerConc: -3 } } },
+      { label: 'Cap at 25%', lean: 'safety', chips: ['n:capabilities ≤ 25%', 'g:power −3', 'b:lead shrinks', 'h:'],
+        fx: { add: { powerConc: -3 }, flags: { capLaw: true }, run: (s) => enforceAlloc(s),
+          moment: 'You capped AI research at 25% of compute by law.' } },
       { label: 'No limit', lean: 'race', chips: ['g:AI research +20%', 'h:'],
         fx: { add: { rdBoost: 0.2 } } },
     ],
@@ -255,8 +224,9 @@ export const DECISIONS: DecisionDef[] = [
     id: 'nationalize', title: 'Nationalize', phases: POST,
     text: 'Bring the frontier labs under federal control.',
     options: [
-      { label: 'Do it', lean: 'power', chips: ['g:security +3', 'g:compute growth +', 'b:power → 80+', 'b:trust −6'],
-        fx: { add: { security: 3, computeBoost: 0.01, trust: -6 }, run: (s) => concentratePower(s, 80, 15) } },
+      { label: 'Do it', lean: 'power', chips: ['g:you set the compute split', 'g:security +3', 'b:power → 80+', 'b:trust −6'],
+        fx: { add: { security: 3, computeBoost: 0.01, trust: -6 }, flags: { nationalized: true },
+          run: (s) => concentratePower(s, 80, 15), moment: 'You nationalized the frontier labs.' } },
       { label: 'Stay private', lean: 'people', chips: ['g:trust +2', 'b:theft risk'],
         fx: { add: { trust: 2 } } },
     ],
@@ -411,16 +381,6 @@ export const DECISIONS: DecisionDef[] = [
     ],
   },
   // ── Plan C ────────────────────────────────────────────────────────────
-  {
-    id: 'c_spend', title: 'Spend the lead', phases: POST, paths: ['C'], max: 8, weight: 3,
-    text: 'Pause scaling for a quarter so safety can catch up?',
-    when: (s) => leadMonths(s) >= 2,
-    options: [
-      { label: 'Pause', lean: 'safety', chips: ['g:safety +0.5', 'b:lead −2mo', 'h:'],
-        fx: { add: { growthHold: 1, safety: 0.5 } } },
-      { label: 'Keep going', lean: 'race', chips: ['g:lead +', 'h:'], fx: {} },
-    ],
-  },
   {
     id: 'c_interp', title: 'Interpretability', phases: POST, paths: ['C', 'A'],
     text: 'A crash program to read what models are thinking.',

@@ -6,6 +6,7 @@ import {
 import { chance, gauss, pick, rand, range, weighted } from './rng';
 import { applyFx, clamp, moment, ticker, unlockComputeTier } from './helpers';
 import { baseRdMult, capOf, leadMonths } from './derived';
+import { LAB_ALLOC, capFactor, driftAlloc, safetyYield } from './alloc';
 import { ALGO_TIERS } from '../content/ladders';
 import { PANELS } from '../content/panels';
 import { COUNTRIES } from '../content/countries';
@@ -38,7 +39,7 @@ export function newGame(seed: number): GameState {
     trust: 52, powerConc: 30, tension: 20, jobs: 0, rdMult: 1,
     safety: 0, verification: 0, intel: 0, security: 1, openness: 0, deployment: 0, computeBoost: 0,
     exportControls: 0, rdBoost: 0, growthHold: 0, pauseCap: null, overhangRate: 1, ubi: false,
-    dealFloor: 0, dealShift: 0,
+    dealFloor: 0, dealShift: 0, alloc: { ...LAB_ALLOC }, allocMoved: 0,
     cnRaw, cnAlgo, cnCap: capOf(cnRaw, cnAlgo), cnRdMult: 1, cnPauseCap: null, covert: 0,
     cnAlignment: range(s, 25, 55), intent,
     alignment: range(s, 56, 68), difficulty: range(s, 0.75, 1.35), timeline: range(s, 0.85, 1.2),
@@ -90,7 +91,8 @@ function advance(s: GameState, dt: number) {
   s.rdMult = 1 + (baseRdMult(s.cap) - 1) * rdFactor;
   let rawG = 0.05 + s.computeBoost + (s.cap >= SAR ? 0.04 : 0) + (s.cap >= 10 ? 0.08 : 0);
   if (moratorium) rawG = Math.min(rawG, 0.01);
-  let algoG = ALGO_BASE * s.timeline * Math.pow(s.rdMult, RD_ELASTICITY) * (s.cap < AC ? clamp(1 + 0.5 * s.rdBoost, 0.5, 2) : 1);
+  let algoG = ALGO_BASE * s.timeline * Math.pow(s.rdMult, RD_ELASTICITY) * capFactor(s)
+    * (s.cap < AC ? clamp(1 + 0.5 * s.rdBoost, 0.5, 2) : 1);
   if (moratorium) algoG = 0;
   // A deal limits capability by its ceiling, not by slowing research; a moratorium slows research itself.
   if (s.pauseCap !== null && !s.dealActive) algoG *= 0.35;
@@ -104,6 +106,12 @@ function advance(s: GameState, dt: number) {
   const prevCap = s.cap;
   const target = s.pauseCap !== null ? Math.min(s.capRaw, s.pauseCap) : s.capRaw;
   s.cap = target > s.cap ? Math.min(target, s.cap + s.overhangRate * dt) : target;
+
+  // Compute allocation: safety research (done more and more by AIs), lab security, verification.
+  s.safety = Math.min(12, s.safety + dt * 0.4 * s.alloc.safety * safetyYield(s.cap));
+  if (s.safety >= 0.3) s.flags.seen_safety = true;
+  s.security = clamp(s.security + dt * (2.5 * s.alloc.security - 0.1), 0, 10);
+  if (s.dealActive) s.verification = Math.min(10, s.verification + dt * 0.8 * s.alloc.security);
 
   // Alignment: risk scales with the *rate* of capability growth, not the level.
   const dC = Math.max(0, s.cap - prevCap);
@@ -139,8 +147,9 @@ function advance(s: GameState, dt: number) {
   const overhangDividend = 0.01 * clamp(s.capRaw - s.cap, 0, 1);
   let g = 0.006 + 0.011 * Math.pow(auto, 1.5) * (0.75 + 0.06 * s.deployment) * (0.6 + s.trust / 125) + overhangDividend;
   if (s.ubi) g *= 0.97;
+  g *= clamp(0.4 + 4 * s.alloc.deploy, 0.4, 2.2);
   s.gdp *= Math.pow(1 + g, dt);
-  s.jobs = clamp((s.cap - 6.6) * 12 + s.deployment * 1.5, 0, 95);
+  s.jobs = clamp((s.cap - 6.6) * 12 + s.deployment * 1.5 + 30 * (s.alloc.deploy - LAB_ALLOC.deploy), 0, 95);
 }
 
 /** Plan A's shared ceiling at the current time. Never below where both sides stood at signing. */
@@ -170,7 +179,8 @@ function quarterBoundary(s: GameState) {
   updatePhase(s);
 
   // Politics
-  s.trust = clamp(s.trust + (50 - s.trust) * 0.04 - s.jobs * 0.035 * (s.ubi ? 0.3 : 1) - (s.flags.moratorium ? 0.4 : 0), 0, 100);
+  driftAlloc(s);
+  s.trust = clamp(s.trust + 8 * (s.alloc.deploy - LAB_ALLOC.deploy) + (50 - s.trust) * 0.04 - s.jobs * 0.035 * (s.ubi ? 0.3 : 1) - (s.flags.moratorium ? 0.4 : 0), 0, 100);
   s.tension = clamp(s.tension - 2 + cnDesperation(s) * 3, 0, 100);
   const pcDrift = (s.cap >= AC ? 0.5 : 0) * (s.path === 'B' || s.path === 'D' ? 1.6 : 1) - 0.12 * s.openness;
   s.powerConc = clamp(s.powerConc + pcDrift, 0, 100);

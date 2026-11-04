@@ -25,6 +25,9 @@ export type NumKey =
   | 'growthHold'
   | 'dealShift';
 
+export type AllocKey = 'cap' | 'safety' | 'deploy' | 'security';
+export type Alloc = Record<AllocKey, number>;
+
 export type MulKey = 'raw' | 'algo' | 'cnRaw' | 'cnAlgo' | 'gdp' | 'covert';
 
 export interface Fx {
@@ -158,6 +161,10 @@ export interface GameState {
   pauseCap: number | null;
   overhangRate: number;
   ubi: boolean;
+  /** Share of US AI compute per use; sums to 1. */
+  alloc: Alloc;
+  /** Share moved by the player this quarter (limited while the labs own the split). */
+  allocMoved: number;
   /** Plan A: capability where both sides stood at signing; the ceiling never drops below it. */
   dealFloor: number;
   /** Plan A: quarters the ceiling schedule runs ahead (+) or behind (−). */

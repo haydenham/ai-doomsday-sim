@@ -12,6 +12,9 @@ export interface PanelDef {
 // Order matters only for layout within a column. Unlocks are never explained.
 export const PANELS: PanelDef[] = [
   { id: 'desk', title: 'The Desk', column: 0, unlockWhen: () => true, unlockHeadline: '' },
+  { id: 'allocation', title: 'Compute Allocation', column: 0,
+    unlockWhen: (s) => s.q >= 2,
+    unlockHeadline: 'The labs start reporting how they spend their compute.' },
   { id: 'alignment', title: 'Alignment Readout', column: 0,
     unlockWhen: (s) => s.safety >= 2.5,
     unlockHeadline: 'Safety team: "We can check if the models are honest. Mostly."' },
