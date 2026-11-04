@@ -1,7 +1,7 @@
 // Headless sim runner: plays many seeded runs with scripted bots and prints balance stats.
 // Usage: npm run sim -- [runs=300] [botName]
 declare const process: { argv: string[] };
-import { abandonTalks, chooseFork, closeNegotiation, newGame, resolveChoice, step, submitOffer } from '../src/sim/engine';
+import { chooseFork, closeNegotiation, newGame, resolveChoice, step, submitOffer } from '../src/sim/engine';
 import { PATHS } from '../src/content/paths';
 import { ENDINGS } from '../src/content/endings';
 import { AC, ASI, SAR, TED_AI, START_YEAR, quarterLabel } from '../src/sim/constants';
@@ -104,8 +104,7 @@ function botTurn(s: GameState, bot: Bot) {
     if (n.outcome !== 'pending') return closeNegotiation(s);
     // Ask for every term not known to be a red line; add the sweetener after a rejection.
     const terms = ['inspections', 'chipcaps', 'joint', 'open', 'macd'].filter((id) => !(n.revealed.includes(id) && n.redLines.includes(id)));
-    // After that, drop to the two easiest terms; give up after a few rounds.
-    if (n.round >= 4) return abandonTalks(s);
+    // After that, drop to the two easiest terms. Four rejections and Beijing ends the talks.
     submitOffer(s, n.round === 0 ? terms : n.round === 1 ? [...terms, 'lift_controls'] : ['joint', 'open', 'lift_controls']);
   }
 }

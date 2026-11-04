@@ -44,6 +44,8 @@ export const EXTRA_TERM_COST = 0.4;
 /** Goodwill lost per rejected offer, and per red line crossed. Talks never end on their own, but they sour. */
 export const REJECT_STRAIN = 0.35;
 export const RED_LINE_STRAIN = 1.2;
+/** After this many rejected offers Beijing ends the talks, and the US races by default. */
+export const MAX_ROUNDS = 4;
 
 export function newNegotiation(s: GameState): Negotiation {
   const idx = s.intent === 'cooperative' ? 0 : s.intent === 'opportunistic' ? 1 : 2;

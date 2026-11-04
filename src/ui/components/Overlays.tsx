@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { GameState, PathId } from '../../sim/types';
 import { abandonTalks, chooseFork, closeNegotiation, resolveChoice, submitOffer } from '../../sim/engine';
 import { PATHS } from '../../content/paths';
-import { NEGOTIATION_ITEMS } from '../../content/negotiation';
+import { MAX_ROUNDS, NEGOTIATION_ITEMS } from '../../content/negotiation';
 import { capLevel, quarterLabel } from '../../sim/constants';
 import { leadMonths } from '../../sim/derived';
 import { game } from '../../store/game';
@@ -147,7 +147,7 @@ export function NegotiationBox({ s }: { s: GameState }) {
     const v = n.values[id];
     return v > 0 ? <span className="good">they want this</span> : v > -1 ? <span className="amber">they dislike this</span> : <span className="bad">they hate this</span>;
   };
-  const status = n.outcome === 'pending' ? `round ${n.round + 1}` : n.outcome === 'accepted' ? 'signed' : 'failed';
+  const status = n.outcome === 'pending' ? `offer ${n.round + 1} of ${MAX_ROUNDS}` : n.outcome === 'accepted' ? 'signed' : 'failed';
   const abandon = () => { sfx.click(); game.act((st) => abandonTalks(st)); };
   return (
     <div className="overlay">

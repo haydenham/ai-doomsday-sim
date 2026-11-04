@@ -14,7 +14,7 @@ import { DECISIONS, decisionEligible } from '../content/decisions';
 import { EVENTS, EVENT_BY_ID, eventToPending, type EventDef } from '../content/events';
 import { FLAVOR, HINTS } from '../content/ticker';
 import { pathDef } from '../content/paths';
-import { EXTRA_TERM_COST, NEGOTIATION_ITEMS, RED_LINE_STRAIN, REJECT_STRAIN, newNegotiation } from '../content/negotiation';
+import { EXTRA_TERM_COST, MAX_ROUNDS, NEGOTIATION_ITEMS, RED_LINE_STRAIN, REJECT_STRAIN, newNegotiation } from '../content/negotiation';
 
 export const SUBSTEP = 0.01; // quarters per simulation substep (small so counters tick smoothly)
 
@@ -431,10 +431,22 @@ export function abandonTalks(s: GameState) {
   const n = s.negotiation;
   if (!n || n.outcome !== 'pending') return;
   s.negotiation = null;
-  s.tension = clamp(s.tension + 10, 0, 100);
   s.decisions.push({ q: s.q, id: 'abandon_talks', label: 'Geneva: walked away and raced' });
   moment(s, 'You walked away from Geneva and chose to race.', 'decision');
+  raceByDefault(s);
+}
+
+function raceByDefault(s: GameState) {
+  s.tension = clamp(s.tension + 10, 0, 100);
   if (s.path !== 'D') { s.path = 'D'; raceDoctrine(s); }
+}
+
+/** Ends a rejected negotiation if Beijing has given up on it. */
+function checkTalksOver(s: GameState, n: NonNullable<GameState['negotiation']>) {
+  if (n.round < MAX_ROUNDS) return;
+  n.outcome = 'rejected';
+  n.lastResponse = `${n.lastResponse} Beijing ends the talks. The race is on.`;
+  moment(s, `Talks with China failed after ${MAX_ROUNDS} offers. The US raced by default.`, 'danger');
 }
 
 export function negotiationOdds(s: GameState, offer: string[]) {
@@ -461,6 +473,7 @@ export function submitOffer(s: GameState, offer: string[]) {
     s.tension = clamp(s.tension + 10, 0, 100);
     if (!s.flags.redLineCrossed) moment(s, `You crossed China's red line at Geneva (${item.name.toLowerCase()}).`, 'danger');
     s.flags.redLineCrossed = true;
+    checkTalksOver(s, n);
     return;
   }
   const score = negotiationOdds(s, offer);
@@ -481,6 +494,7 @@ export function submitOffer(s: GameState, offer: string[]) {
   n.strain += REJECT_STRAIN;
   s.tension = clamp(s.tension + 3, 0, 100);
   n.lastResponse = `Rejected. "${item.refusal}"`;
+  checkTalksOver(s, n);
 }
 
 function startDeal(s: GameState, offer: string[]) {
@@ -503,7 +517,9 @@ function startDeal(s: GameState, offer: string[]) {
 
 export function closeNegotiation(s: GameState) {
   if (s.negotiation && s.negotiation.outcome !== 'pending') {
+    const failed = s.negotiation.outcome === 'rejected';
     s.negotiation = null;
+    if (failed) raceByDefault(s);
   }
 }
 
