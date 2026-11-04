@@ -71,7 +71,8 @@ input { font: inherit; }
 .row-label { color: var(--dim); }
 .row-value { color: var(--bright); font-variant-numeric: tabular-nums; text-align: right; }
 .row-value.good { color: var(--good); } .row-value.bad { color: var(--bad); } .row-value.dim { color: var(--faint); }
-.row-sub { font-size: 12px; min-width: 0; }
+.row-sub { font-size: 12px; min-width: 0; white-space: nowrap; }
+.trend { font-size: 11px; }
 .row.fresh .row-label { color: var(--amber); }
 .flash { animation: flash 1s ease; }
 @keyframes flash { 0%, 40% { color: var(--amber); text-shadow: 0 0 10px var(--amber); } 100% { text-shadow: none; } }

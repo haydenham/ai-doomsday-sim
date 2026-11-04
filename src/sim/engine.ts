@@ -6,7 +6,7 @@ import {
 import { chance, gauss, pick, rand, range, weighted } from './rng';
 import { applyFx, clamp, moment, ticker, unlockComputeTier } from './helpers';
 import { baseRdMult, capOf, leadMonths } from './derived';
-import { LAB_ALLOC, capFactor, driftAlloc, safetyYield } from './alloc';
+import { LAB_ALLOC, capFactor, driftAlloc, safetyRate } from './alloc';
 import { ALGO_TIERS } from '../content/ladders';
 import { PANELS } from '../content/panels';
 import { COUNTRIES } from '../content/countries';
@@ -108,7 +108,7 @@ function advance(s: GameState, dt: number) {
   s.cap = target > s.cap ? Math.min(target, s.cap + s.overhangRate * dt) : target;
 
   // Compute allocation: safety research (done more and more by AIs), lab security, verification.
-  s.safety = Math.min(12, s.safety + dt * 0.4 * s.alloc.safety * safetyYield(s.cap));
+  s.safety = Math.min(12, s.safety + dt * safetyRate(s));
   if (s.safety >= 0.3) s.flags.seen_safety = true;
   s.security = clamp(s.security + dt * (2.5 * s.alloc.security - 0.1), 0, 10);
   if (s.dealActive) s.verification = Math.min(10, s.verification + dt * 0.8 * s.alloc.security);

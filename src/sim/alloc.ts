@@ -76,6 +76,9 @@ export function driftAlloc(s: GameState) {
   enforceAlloc(s);
 }
 
+/** Safety research gained per quarter at the current split. */
+export const safetyRate = (s: GameState) => (s.safety >= 12 ? 0 : 0.4 * s.alloc.safety * safetyYield(s.cap));
+
 /** Capability share relative to the labs' default; scales the speed of algorithmic progress. */
 export const capFactor = (s: GameState) => Math.pow(s.alloc.cap / LAB_ALLOC.cap, 2);
 
@@ -84,6 +87,7 @@ export const capFactor = (s: GameState) => Math.pow(s.alloc.cap / LAB_ALLOC.cap,
  * so starving capabilities starves safety too.
  */
 export function safetyYield(cap: number) {
-  if (cap < AC) return 0.3 + 0.7 * clamp((cap - 6.7) / (AC - 6.7), 0, 1);
+  // Human researchers carry most of it before AI can do research itself.
+  if (cap < AC) return 0.6 + 0.4 * clamp((cap - 6.7) / (AC - 6.7), 0, 1);
   return Math.min(1.6, 1 + 0.6 * (cap - AC) / (SAR - AC));
 }

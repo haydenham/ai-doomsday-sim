@@ -1,7 +1,7 @@
 import type { AllocKey, GameState, Intent } from '../sim/types';
 import { capLevel, quarterLabel } from '../sim/constants';
 import { agentCopies, leadMonths } from '../sim/derived';
-import { ALLOC_STEP, allocMax, allowanceLeft, inControl, shiftAlloc } from '../sim/alloc';
+import { ALLOC_STEP, allocMax, allowanceLeft, inControl, safetyRate, shiftAlloc } from '../sim/alloc';
 import { game } from '../store/game';
 import { sfx } from './audio';
 import { rand } from '../sim/rng';
@@ -13,8 +13,9 @@ import { LEVER_MAX, bigStr, levelWord, moneyStr, mult } from './format';
 
 const seen = (s: GameState, k: string) => !!s.flags[`seen_${k}`];
 
-const Lever = ({ label, value }: { label: string; value: number }) =>
-  <Stat label={label} value={value} max={LEVER_MAX} word={levelWord(value)} />;
+const Lever = ({ label, value, perYear }: { label: string; value: number; perYear?: number }) =>
+  <Stat label={label} value={value} max={LEVER_MAX}
+    word={<>{levelWord(value)}{perYear !== undefined && perYear >= 0.05 && <span className="dim trend"> ▲{perYear.toFixed(1)}/yr</span>}</>} />;
 
 /** The status block. Starts nearly empty; each line appears the first time it matters. */
 export function Status({ s }: { s: GameState }) {
@@ -28,7 +29,7 @@ export function Status({ s }: { s: GameState }) {
       {seen(s, 'powerConc') && <Stat label="power concentration" value={s.powerConc} word={Math.round(s.powerConc)} tone={s.powerConc >= 60 ? 'bad' : undefined} />}
       {s.jobs >= 5 && <Stat label="jobs automated" value={s.jobs} word={`${Math.round(s.jobs)}%`} />}
       {s.panels.includes('compute') && <Row label="frontier AI">{capLevel(s.cap).cur.name.toLowerCase()}</Row>}
-      {seen(s, 'safety') && <Lever label="safety research" value={s.safety} />}
+      {seen(s, 'safety') && <Lever label="safety research" value={s.safety} perYear={s.panels.includes('allocation') ? 4 * safetyRate(s) : undefined} />}
       {seen(s, 'verification') && <Lever label="verification" value={s.verification} />}
       {seen(s, 'security') && <Lever label="lab security" value={s.security} />}
     </Section>
