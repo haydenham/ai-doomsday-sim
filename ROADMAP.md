@@ -1,0 +1,127 @@
+# Roadmap
+
+Sequential plan for the next iterations. One step at a time; each step ends with a playable build and a balance run (`npm run sim`). Don't start a step until the previous one feels right.
+
+**Principle:** subtraction first. Keep the core thesis: alignment is hidden, speed is what creates risk, and the Reveal pays it off.
+
+---
+
+## Step 0. Remove the quarter timer bar ✅ done
+
+The yellow progress bar under the top bar is gone. Time is felt through the clock and the numbers, not a countdown.
+
+---
+
+## Step 1. Scenario fidelity: put the timelines on AI 2040's rails
+
+### Research summary (ai-2040.com and its supplements, read 2026-11-03)
+
+| When | AI 2040 (Plan A narrative + supplements) | Game today |
+|---|---|---|
+| 2027 | Agents "in the millions". AI Transparency Act passes and changes little. Labs spend ~half their compute on AI R&D. | ✅ roughly |
+| 2028 | AI election. Most white-collar work = managing agents. Datacenter build costs 2× the military budget. | ❌ we reach **superhuman coder in 2028** |
+| Mar–Sep 2029 | Plan A: training pause while the deal is set up. | ❌ no pause |
+| ~Jan 2030 (no deal) | **Automated Coder (AC)**, ~3× AI R&D speedup. Full automation of AI R&D during 2030. | ❌ we hit "automated AI researcher" in 2029 |
+| ~2031 (no deal) | ASI roughly **1 year after AC** (80% CI: 2 months to 5 years). | ✅ race reaches ASI ~2032 |
+| Jan 2030 → 2035 (Plan A) | Training resumes Jan 2030. AC ~mid-2030. Scale "relatively quickly" by training compute, not software, to **TED-AI** (top-expert-dominating AI, ~40× speedup) around late 2034–2035. | ❌ we reach the cap ~2031 and then sit there |
+| 2035–2040 (Plan A) | Scaling slows "nearly to a halt" while alignment confidence builds. | ⚠️ we pause from ~2031 |
+| 2040 | Handoff to AIs; controls relaxed. | ✅ |
+
+**Capability ladder AI 2040 uses** (speedup = realized AI R&D uplift):
+Automated Coder (3×) → Superhuman AI Researcher (20×) → TED-AI (40×) → Wildly superintelligent (~10,000×).
+
+**Compute anchors (H100-equivalents):**
+- US ≈ 224M, China ≈ 26M (9%), rest of world ≈ 39M installed by 2029.
+- China stock: 6.3M at end-2026 and 13.2M at end-2027. About a third of it is smuggled.
+- Plan A: roughly 1T H100e installed by 2040.
+- The largest covert project plausibly undetected under a deal is ~1% of pre-deal compute.
+
+**The game's current numbers are off:** we start the US at 5M H100e and China at 3M. AI 2040 implies roughly 50M vs 6M in early 2027.
+
+### Changes
+
+1. **Rename the capability ladder** to AI 2040's terms: Agents → Automated Coder → Superhuman AI Researcher → TED-AI → Superintelligence. Drop "superhuman coder" and "automated AI researcher" as separate rungs.
+2. **Retime the growth curve** so the default (no-deal) path hits AC around early 2030 and ASI around 2031–32, and Plan A hits AC mid-2030 and TED-AI ~2035.
+3. **Real compute numbers:** start around US 50M / China 6M H100e and follow the supplement's buildout.
+4. **Plan A 2029 training pause** (Mar–Sep) as a visible beat.
+5. **Gate flavor by actual state, not phase.** Example: "Lab staff can't follow the models' work" requires real capability, so it can't fire during a pause.
+6. **Rails vs. choices.** Each path gets a canonical trajectory from AI 2040. Player choices shift timing within a band (about ±1–2 years) and change outcomes, but don't throw the story off the rails. The headless runner asserts the median milestone dates per path fall inside their bands.
+
+---
+
+## Step 2. Standardize the metrics
+
+Every player-facing metric uses the same 10-cell bar plus a word. No bare numbers like "lab security 4".
+
+```
+safety research   ▮▮▮▯▯▯▯▯▯▯  low
+verification      ▮▮▮▮▮▯▯▯▯▯  moderate
+lab security      ▮▮▮▮▮▮▮▮▯▯  high
+public trust      ▮▮▮▮▮▯▯▯▯▯  52
+```
+
+- Levers (safety, verification, intel, security) are shown on a 0–10 scale with words: none / low / moderate / high / very high.
+- Percent-like stats (trust, power, tension, deal integrity) keep the number next to the bar.
+- Big counters (economy, compute) stay as numbers with scale words; those are the "numbers go up" fun.
+
+---
+
+## Step 3. The primary control
+
+Plague Inc's core loop is shaping your pathogen. Universal Paperclips has a few panels you manage continuously. Decisions alone are reactive, so the player needs one thing they *steer*.
+
+### Options
+
+**A. Compute allocation (recommended).** One always-visible split of America's AI compute across four uses, adjustable at any time (the clock keeps running):
+
+```
+── compute allocation
+capabilities  ▮▮▮▮▮▮▯▯▯▯  60%   faster AI, bigger lead, more risk
+safety        ▮▮▯▯▯▯▯▯▯▯  20%   alignment, clearer readout
+deployment    ▮▯▯▯▯▯▯▯▯▯  10%   economy, jobs, trust
+security      ▮▯▯▯▯▯▯▯▯▯  10%   anti-theft, verification
+```
+
+- It *is* the thesis: the capability slice sets the speed, and speed is what creates risk.
+- It's grounded in the scenario: AI 2040 tracks what share of compute goes to AI R&D, and "cap AI R&D at 25%" is a real Plan A policy.
+- Decisions and paths act on it rather than beside it. A law can cap the capabilities slice; Plan D unlocks 90%; the Plan A treaty limits it; nationalizing the labs lets you set it directly instead of only nudging it.
+- Early game: you only *influence* the labs, so moves are slow and limited. Late game: full control. That itself is progression.
+
+**B. Policy tree, Plague's "evolve" screen.** A resource (influence) accrues over time and is spent on permanent nodes in three trees: Domestic, Compute, Diplomacy. Familiar and deep, but it adds back a currency we just removed and pulls attention off the main screen.
+
+**C. Pace dial.** A single slider from "pause" to "full race". Maximally simple and readable, but it's one dimension, so it gets solved fast.
+
+**D. Map actions.** Click countries to build datacenters, sign allies, place inspectors or spy, using a slow-regenerating resource. The strongest Plague feel, and it makes the map interactive. Better as a secondary verb after the primary is in place (Step 4).
+
+**Recommendation: A as the primary control, D later as the secondary.** Decisions stay as the interrupting events.
+
+---
+
+## Step 4. Interactive map
+
+Builds on Step 3 (and option D if chosen):
+- Hover or click a country to see its stance, compute, and deal status.
+- Place datacenters, inspectors or spies on countries.
+- Visible spread: deal membership, halts, and defections propagate country to country.
+- Covert sites appear only when intel finds them.
+
+---
+
+## Step 5. Rebalance choice impact vs. the rails
+
+Once the control exists, tune so that:
+- Default play follows the AI 2040 narrative for the chosen path.
+- Skilled or reckless steering moves milestones within the band and changes the ending.
+- No single allocation dominates across seeds. The runner gains allocation-strategy bots.
+
+---
+
+## Sources
+
+- AI 2040 main scenario: https://ai-2040.com
+- Takeoff Forecast: https://www.ai-2040.com/supplements/takeoff-forecast
+- Capability Scaling Strategy: https://www.ai-2040.com/supplements/capability-scaling-strategy
+- Compute in Plan A: https://www.ai-2040.com/supplements/compute-supplement
+- Plan A Assumptions: https://www.ai-2040.com/supplements/plan-a-assumptions
+
+Note: only the Plan A branch is written out in full on the site; Plans B, C, D and S are stubs at the 2029 fork. Their trajectories in the game have to be extrapolated from the no-deal default (AC ~2030, ASI ~1 year later).
