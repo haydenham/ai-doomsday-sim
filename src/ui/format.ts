@@ -31,4 +31,9 @@ export const mult = (n: number) => (n >= 1e6 ? { num: `×${big(n).num}`, unit: b
 
 export const pct = (n: number) => `${Math.round(n)}%`;
 
+/** Levers (safety, verification, intel, security) run 0–10 and are shown as a word, never a bare number. */
+export const LEVER_MAX = 10;
+export const levelWord = (v: number) =>
+  v < 0.5 ? 'none' : v < 3 ? 'low' : v < 6 ? 'moderate' : v < 8.5 ? 'high' : 'very high';
+
 export const signed = (n: number, digits = 1) => `${n >= 0 ? '+' : '−'}${Math.abs(n).toFixed(digits)}`;

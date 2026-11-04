@@ -4,11 +4,14 @@ import { agentCopies, leadMonths } from '../sim/derived';
 import { rand } from '../sim/rng';
 import { ALGO_TIERS, COMPUTE_TIERS } from '../content/ladders';
 import { AI_DISCOVERIES } from '../content/ticker';
-import { Meter, Row, Section } from './components/term';
+import { Row, Section, Stat } from './components/term';
 import { WorldMap } from './components/WorldMap';
-import { bigStr, moneyStr, mult } from './format';
+import { LEVER_MAX, bigStr, levelWord, moneyStr, mult } from './format';
 
 const seen = (s: GameState, k: string) => !!s.flags[`seen_${k}`];
+
+const Lever = ({ label, value }: { label: string; value: number }) =>
+  <Stat label={label} value={value} max={LEVER_MAX} word={levelWord(value)} />;
 
 /** The status block. Starts nearly empty; each line appears the first time it matters. */
 export function Status({ s }: { s: GameState }) {
@@ -18,13 +21,13 @@ export function Status({ s }: { s: GameState }) {
   return (
     <Section title="united states">
       {s.q >= 1 && <Row label="economy" sub={<span className={growth >= 0 ? 'good' : 'bad'}>{growth >= 0 ? '▲' : '▼'}{Math.abs(growth).toFixed(1)}%/yr</span>}>{moneyStr(s.gdp)}</Row>}
-      {seen(s, 'trust') && <Row label="public trust" sub={<Meter value={s.trust} />} tone={s.trust < 30 ? 'bad' : undefined}>{Math.round(s.trust)}</Row>}
-      {seen(s, 'powerConc') && <Row label="power concentration" sub={<Meter value={s.powerConc} />} tone={s.powerConc >= 60 ? 'bad' : undefined}>{Math.round(s.powerConc)}</Row>}
-      {s.jobs >= 5 && <Row label="jobs automated">{`${Math.round(s.jobs)}%`}</Row>}
+      {seen(s, 'trust') && <Stat label="public trust" value={s.trust} word={Math.round(s.trust)} tone={s.trust < 30 ? 'bad' : undefined} />}
+      {seen(s, 'powerConc') && <Stat label="power concentration" value={s.powerConc} word={Math.round(s.powerConc)} tone={s.powerConc >= 60 ? 'bad' : undefined} />}
+      {s.jobs >= 5 && <Stat label="jobs automated" value={s.jobs} word={`${Math.round(s.jobs)}%`} />}
       {s.panels.includes('compute') && <Row label="frontier AI">{capLevel(s.cap).cur.name.toLowerCase()}</Row>}
-      {seen(s, 'safety') && <Row label="safety research">{s.safety.toFixed(1)}</Row>}
-      {seen(s, 'verification') && <Row label="verification">{s.verification.toFixed(1)}</Row>}
-      {seen(s, 'security') && <Row label="lab security">{s.security.toFixed(0)}</Row>}
+      {seen(s, 'safety') && <Lever label="safety research" value={s.safety} />}
+      {seen(s, 'verification') && <Lever label="verification" value={s.verification} />}
+      {seen(s, 'security') && <Lever label="lab security" value={s.security} />}
     </Section>
   );
 }
@@ -52,7 +55,7 @@ export function Compute({ s }: { s: GameState }) {
       {s.panels.includes('algorithms') && <Row label="effective">{bigStr(s.raw * s.algo)}</Row>}
       <Row label="sites">{COMPUTE_TIERS[s.computeTier - 1].name.toLowerCase()}</Row>
       {next && s.computeTier < 9 && <div className="line dim">next: {next.name.toLowerCase()}</div>}
-      <Row label="capability" sub={<Meter value={lvl.progress} max={1} />}>{''}</Row>
+      <Stat label="capability" value={lvl.progress} max={1} word={`${Math.round(lvl.progress * 100)}%`} />
       <div className="line dim">→ {held ? 'held at treaty cap' : lvl.next?.name.toLowerCase() ?? 'beyond'}</div>
     </Section>
   );
@@ -92,8 +95,8 @@ export function Alignment({ s }: { s: GameState }) {
   const verdict = r >= 75 ? 'looks aligned' : r >= 55 ? 'probably fine' : r >= 40 ? 'concerning' : 'danger';
   return (
     <Section title="alignment readout" className="teal">
-      <Row label="estimate" sub={<span className="dim">±{Math.round(s.readoutSigma)}</span>} tone={r < 40 ? 'bad' : undefined}>{`${Math.round(r)}%`}</Row>
-      <div className="line"><Meter value={r} width={20} /> <span className={r >= 55 ? 'good' : r >= 40 ? 'amber' : 'bad'}>{verdict}</span></div>
+      <Stat label="estimate" value={r} word={<>{Math.round(r)}% <span className="dim">±{Math.round(s.readoutSigma)}</span></>} tone={r < 40 ? 'bad' : undefined} />
+      <div className={`line ${r >= 55 ? 'good' : r >= 40 ? 'amber' : 'bad'}`}>{verdict}</div>
       <div className="line dim">it can be fooled.</div>
     </Section>
   );
@@ -129,7 +132,8 @@ export function World({ s }: { s: GameState }) {
     <Section title="world">
       <WorldMap s={s} />
       <Row label="lead over china" tone={lead >= 0 ? 'good' : 'bad'}>{`${lead >= 0 ? '+' : '−'}${Math.abs(lead).toFixed(1)} mo`}</Row>
-      <Row label="tension" sub={<Meter value={s.tension} />} tone={s.tension >= 70 ? 'bad' : undefined}>{Math.round(s.tension)}</Row>
+      <Stat label="tension" value={s.tension} word={Math.round(s.tension)} tone={s.tension >= 70 ? 'bad' : undefined} />
+      {seen(s, 'intel') && <Lever label="intelligence" value={s.intel} />}
       {seen(s, 'intel') && <Row label="china's posture" sub={<span className="dim">{Math.round(a.conf * 100)}% sure</span>}>{a.intent}</Row>}
       {a.covertSeen && <div className="line bad">unexplained power use near xinjiang</div>}
     </Section>
@@ -140,7 +144,7 @@ export function Deal({ s }: { s: GameState }) {
   return (
     <Section title="the deal">
       {s.dealActive
-        ? <Row label="integrity" sub={<Meter value={s.dealIntegrity} />} tone={s.dealIntegrity < 30 ? 'bad' : undefined}>{Math.round(s.dealIntegrity)}</Row>
+        ? <Stat label="integrity" value={s.dealIntegrity} word={Math.round(s.dealIntegrity)} tone={s.dealIntegrity < 30 ? 'bad' : undefined} />
         : <div className="line bad">no deal in force</div>}
     </Section>
   );

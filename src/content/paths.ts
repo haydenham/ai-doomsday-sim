@@ -1,5 +1,6 @@
 import type { GameState, PathId } from '../sim/types';
 import { leadMonths } from '../sim/derived';
+import { levelWord } from '../ui/format';
 
 export interface PathDef {
   id: PathId;
@@ -46,7 +47,7 @@ export const PATHS: PathDef[] = [
     available: (s) => {
       if (s.verification < 1)
         return { ok: true, note: 'No verification tools funded. The deal will start weak.' };
-      return { ok: true, note: `Verification level ${s.verification.toFixed(0)}: the deal starts stronger.` };
+      return { ok: true, note: `Verification is ${levelWord(s.verification)}: the deal starts stronger.` };
     },
   },
   {

@@ -8,6 +8,7 @@ import { leadMonths } from '../../sim/derived';
 import { game } from '../../store/game';
 import { randomSeed } from '../../sim/rng';
 import { sfx } from '../audio';
+import { levelWord } from '../format';
 import { Chips } from './term';
 
 /** Number keys pick options while an overlay is up. */
@@ -102,7 +103,7 @@ export function ForkScreen({ s }: { s: GameState }) {
         <div className="box-head"><span>2029 · choose a path</span><span className="dim">■ clock stopped</span></div>
         <div className="box-title big">Choose a path.</div>
         <div className="box-body">Frontier AI: {capLevel(s.cap).cur.name.toLowerCase()}. This cannot be undone.</div>
-        <div className="line dim">lead {lead.toFixed(0)}mo · trust {Math.round(s.trust)} · safety {s.safety.toFixed(1)} · verification {s.verification.toFixed(1)}</div>
+        <div className="line dim">lead {lead.toFixed(0)}mo · trust {Math.round(s.trust)} · safety {levelWord(s.safety)} · verification {levelWord(s.verification)}</div>
         <div className="paths">
           {PATHS.map((p, i) => {
             const av = p.available(s);

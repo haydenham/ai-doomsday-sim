@@ -60,7 +60,9 @@ Automated Coder (3×) → Superhuman AI Researcher (20×) → TED-AI (40×) → 
 
 ---
 
-## Step 2. Standardize the metrics
+## Step 2. Standardize the metrics ✅ done
+
+Shipped: every metric row is a `Stat` (`ui/components/term.tsx`): label, 10-cell bar, then a word or number. Levers use `levelWord` (`ui/format.ts`) on a 0–10 scale. Intelligence now shows as a lever in the World block. The Fork overlay and Plan A note use words too.
 
 Every player-facing metric uses the same 10-cell bar plus a word. No bare numbers like "lab security 4".
 

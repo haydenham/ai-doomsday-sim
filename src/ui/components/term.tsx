@@ -56,6 +56,17 @@ export function Meter({ value, max = 100, width = 10 }: { value: number; max?: n
   return <span className="meter">{'▮'.repeat(n)}<span className="meter-off">{'▯'.repeat(width - n)}</span></span>;
 }
 
+/** The one way a metric is shown: label, 10-cell bar, then a word or number. */
+export function Stat({ label, value, max = 100, word, tone }: {
+  label: string; value: number; max?: number; word: ReactNode; tone?: 'good' | 'bad' | 'amber';
+}) {
+  return (
+    <Row label={label} sub={<span className={tone ?? ''}>{word}</span>}>
+      <Meter value={Math.min(value, max)} max={max} />
+    </Row>
+  );
+}
+
 /** Effect tags: "g:trust +2" good, "b:..." bad, "n:..." neutral, "h:" hidden effects. */
 export function Chips({ chips }: { chips?: Chip[] }) {
   if (!chips?.length) return null;

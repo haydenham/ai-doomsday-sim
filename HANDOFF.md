@@ -10,9 +10,9 @@ Playable local prototype: a real-time, decision-driven strategy game about US AI
 
 - **v1** (dashboard plus a hand of policy cards with political capital) was **rejected** as cluttered, wordy and not gamified.
 - **v2** (current) was received very well ("wayyyy better"). Terminal UI, one decision at a time, slow reveal.
-- **Steps 0 and 1 of the roadmap are done:** the timer bar was removed (0), and the timelines now follow AI 2040 (1, see ROADMAP).
+- **Steps 0–2 of the roadmap are done:** the timer bar was removed (0), timelines follow AI 2040 (1), and metrics share one bar-plus-word style (2).
 - **Waiting on the owner:**
-  - a playtest of Step 1 before starting Step 2 (metrics);
+  - a playtest of Steps 1–2;
   - which **primary control** to build in Step 3. Recommended: compute allocation across capabilities / safety / deployment / security.
 
 ## Run
@@ -107,7 +107,7 @@ Takeoff was tuned to the owner's call: no-deal paths reach ASI 1–2 years after
    - Plan A (safety-minded) wins 100%.
    - With Shut It Down, a refusing China often reaches ASI before the late lift.
    - All three are for Step 5.
-3. **Metrics aren't standardized.** Lever stats (safety, verification, lab security) show bare numbers. The owner wants the 10-cell `▮▮▮▯` bar style plus a word everywhere (Step 2).
+3. ~~Metrics aren't standardized~~: fixed in Step 2. New metric rows should use `Stat`, and levers should use `Lever` in `sections.tsx`.
 4. **No primary control yet** (Step 3) and **the map is not interactive** (Step 4).
 5. Safety-minded play on Plans A and C wins too reliably; Plan B has no winning style.
 6. No git repo and no unit tests; the headless runner is the safety net.
