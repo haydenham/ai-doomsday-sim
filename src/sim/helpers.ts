@@ -73,6 +73,12 @@ export function concentratePower(s: GameState, floor: number, add: number) {
   s.powerConc = clamp(Math.max(floor, s.powerConc + add), 0, 100);
 }
 
+/** With no deal or moratorium left to cheat on, China's hidden compute is just compute. */
+export function declareCovert(s: GameState) {
+  s.cnRaw += s.covert;
+  s.covert = 0;
+}
+
 /** Lifting a pause releases years of withheld research. Capability then climbs at s.overhangRate. */
 export function releaseOverhang(s: GameState, rate: number) {
   s.pauseCap = null;

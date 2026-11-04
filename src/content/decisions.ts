@@ -1,7 +1,6 @@
 import type { Choice, GameState, PathId, Phase } from '../sim/types';
-import { concentratePower, releaseOverhang, shiftStance, ticker, unlockComputeTier } from '../sim/helpers';
+import { concentratePower, declareCovert, releaseOverhang, shiftStance, ticker, unlockComputeTier } from '../sim/helpers';
 import { rand } from '../sim/rng';
-import { newNegotiation } from './negotiation';
 import { AC } from '../sim/constants';
 import { enforceAlloc } from '../sim/alloc';
 
@@ -449,15 +448,6 @@ export const DECISIONS: DecisionDef[] = [
         fx: { add: { dealShift: -2, safety: 0.5, trust: -4 } } },
     ],
   },
-  {
-    id: 'a_reopen', title: 'Talks', phases: LATE, paths: ['A'], max: 2, weight: 3,
-    text: 'Try again with Beijing?',
-    when: (s) => !s.dealActive,
-    options: [
-      { label: 'Reopen talks', lean: 'dove', chips: ['n:negotiate'], fx: { run: (s) => { s.negotiation = newNegotiation(s); } } },
-      { label: 'Race instead', lean: 'race', chips: ['g:compute growth +', 'b:tension +5'], fx: { add: { computeBoost: 0.01, tension: 5 } } },
-    ],
-  },
   // ── Plan S ────────────────────────────────────────────────────────────
   {
     id: 's_taskforce', title: 'Enforcement', phases: LATE, paths: ['S'], max: 2,
@@ -491,7 +481,7 @@ export const DECISIONS: DecisionDef[] = [
     when: (s) => !!s.flags.moratorium && (s.q >= 36 || s.cnPauseCap === null),
     options: [
       { label: 'Lift slowly', lean: 'race', chips: ['g:growth returns', 'h:'],
-        fx: { flags: { moratorium: false }, run: (s) => releaseOverhang(s, 0.3),
+        fx: { flags: { moratorium: false }, run: (s) => { releaseOverhang(s, 0.3); declareCovert(s); },
           headline: 'The moratorium ends.', moment: 'You lifted the moratorium.' } },
       { label: 'Hold', lean: 'safety', chips: ['b:trust −4'], fx: { add: { trust: -4 } } },
     ],

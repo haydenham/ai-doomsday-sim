@@ -1,8 +1,9 @@
 import type { Choice, Fx, GameState, PendingEvent } from '../sim/types';
-import { concentratePower, moment, releaseOverhang, shiftStance, ticker } from '../sim/helpers';
+import { concentratePower, declareCovert, moment, releaseOverhang, shiftStance, ticker } from '../sim/helpers';
 import { leadMonths } from '../sim/derived';
 import { AC, DEAL_RESUME_Q, TED_AI } from '../sim/constants';
 import { rand } from '../sim/rng';
+import { newNegotiation } from './negotiation';
 
 export interface EventDef {
   id: string;
@@ -31,6 +32,8 @@ const collapseDeal = (s: GameState, why: string) => {
   s.cnPauseCap = null;
   s.tension = Math.min(100, s.tension + 20);
   for (const c of s.countries) c.inDeal = false;
+  declareCovert(s);
+  s.flags.talksEndedQ = s.q;
   ticker(s, why, 'warn');
   moment(s, 'The US-China deal collapsed.', 'danger');
 };
@@ -89,7 +92,7 @@ export const EVENTS: EventDef[] = [
     chance: 1,
     title: 'Election',
     body: (s) => s.trust >= 40 ? 'Voters back your AI policy.' : 'Voters reject your AI policy. A new team cuts your programs.',
-    choices: (s) => [
+    choices: (s): Choice[] => [
       s.trust >= 40
         ? { label: 'Continue', chips: ['g:trust +5'], fx: { add: { trust: 5 } } }
         : { label: 'Continue', chips: ['b:safety −1', 'b:verification −1', 'n:trust resets'],
@@ -151,13 +154,14 @@ export const EVENTS: EventDef[] = [
   },
   {
     id: 'cn_covert_found', once: false, cooldown: 6, kind: 'crisis',
-    when: (s) => s.covert > s.cnRaw * 0.05,
+    // Only meaningful while there's a deal or moratorium for China to be cheating on.
+    when: (s) => (s.dealActive || !!s.flags.moratorium) && s.covert > s.cnRaw * 0.05,
     chance: (s) => 0.03 + 0.04 * s.intel + 0.03 * s.verification + (s.flags.chipTracking ? 0.06 : 0),
     title: 'Hidden datacenter',
     body: (s) => `Satellites find ${(s.covert / 1e6).toFixed(1)} million undeclared chips in Xinjiang.`,
-    choices: [
-      { label: 'Confront Beijing', lean: 'hawk', chips: ['g:covert −70%', 'b:tension +15', 'b:deal −10'],
-        fx: { mul: { covert: 0.3 }, add: { tension: 15, dealIntegrity: -10 }, flags: { cnCovertKnown: true } } },
+    choices: (s): Choice[] => [
+      { label: 'Confront Beijing', lean: 'hawk', chips: ['g:covert −70%', 'b:tension +15', ...(s.dealActive ? ['b:deal −10'] : [])],
+        fx: { mul: { covert: 0.3 }, add: { tension: 15, dealIntegrity: s.dealActive ? -10 : 0 }, flags: { cnCovertKnown: true } } },
       { label: 'Build our own', lean: 'race', chips: ['g:compute ×1.4', 'b:power +8', 'b:if found: disaster'],
         fx: { mul: { raw: 1.4 }, add: { powerConc: 8 }, flags: { usCovert: true, cnCovertKnown: true },
           moment: 'You answered China\'s covert project with one of your own.' } },
@@ -227,6 +231,20 @@ export const EVENTS: EventDef[] = [
   {
     id: 'deal_plateau', when: (s) => s.dealActive && s.pauseCap !== null && s.cap >= TED_AI, chance: 1,
     fx: { headline: 'The treaty ceiling flattens. Scaling slows to a crawl until 2040.' },
+  },
+  {
+    // After failed talks or a collapsed deal, Beijing comes back. Not during a moratorium.
+    id: 'talks_return', once: false, cooldown: 4, kind: 'news',
+    when: (s) => !s.dealActive && !s.negotiation && !s.flags.moratorium && !!s.flags.dealEver
+      && s.q - Number(s.flags.talksEndedQ ?? 0) >= 4,
+    chance: 0.5,
+    title: 'Talks',
+    body: 'Beijing signals it is ready to talk again.',
+    choices: [
+      { label: 'Reopen talks', lean: 'dove', chips: ['n:negotiate'], fx: { run: (s) => { s.negotiation = newNegotiation(s); } } },
+      { label: 'Keep racing', lean: 'race', chips: ['g:compute growth +', 'b:tension +5'],
+        fx: { add: { computeBoost: 0.01, tension: 5 }, run: (s) => { s.flags.talksEndedQ = s.q; } } },
+    ],
   },
   {
     id: 'deal_breakdown', once: true, when: (s) => s.dealActive && s.dealIntegrity <= 0, chance: 1,

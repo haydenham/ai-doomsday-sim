@@ -245,7 +245,8 @@ function algoBreakthrough(s: GameState) {
 function chinaActs(s: GameState) {
   const desp = cnDesperation(s);
   // Covert compute: hidden in plain sight whenever there are rules to break.
-  const rulesToBreak = s.dealActive || !!s.flags.moratorium || s.exportControls >= 1;
+  // Covert compute means cheating on a deal or moratorium; smuggling under export controls is the cnRaw leak below.
+  const rulesToBreak = s.dealActive || !!s.flags.moratorium;
   if (s.covert === 0 && s.intent !== 'cooperative' && rulesToBreak && s.q >= 10) {
     const p = (s.intent === 'racing' ? 0.22 : 0.1) * (s.flags.noRecycling ? 0.5 : 1)
       * (s.flags.chipTracking ? 0.6 : 1) * (s.flags.macd ? 0.5 : 1);
@@ -437,6 +438,7 @@ export function abandonTalks(s: GameState) {
 }
 
 function raceByDefault(s: GameState) {
+  s.flags.talksEndedQ = s.q;
   s.tension = clamp(s.tension + 10, 0, 100);
   if (s.path !== 'D') { s.path = 'D'; raceDoctrine(s); }
 }
@@ -499,6 +501,7 @@ export function submitOffer(s: GameState, offer: string[]) {
 
 function startDeal(s: GameState, offer: string[]) {
   s.dealActive = true;
+  s.path = 'A'; // a deal puts you on Plan A's rails, whichever path you started on
   let integrity = 25 + 10 * s.verification;
   for (const id of offer) {
     const it = NEGOTIATION_ITEMS.find((i) => i.id === id)!;
