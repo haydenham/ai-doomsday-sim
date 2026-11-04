@@ -18,7 +18,11 @@ export function Section({ title, children, className = '' }: { title: string; ch
 }
 
 /** label .......... value. Marks itself "new" for a few seconds after appearing. */
-export function Row({ label, children, sub, tone }: { label: string; children: ReactNode; sub?: ReactNode; tone?: 'good' | 'bad' | 'dim' }) {
+export function Row({ label, children, sub, tone, hint }: {
+  label: string; children: ReactNode; sub?: ReactNode; tone?: 'good' | 'bad' | 'dim';
+  /** Short explanation shown on hover. */
+  hint?: string;
+}) {
   const [fresh, setFresh] = useState(true);
   useEffect(() => {
     const t = setTimeout(() => setFresh(false), 4000);
@@ -26,7 +30,7 @@ export function Row({ label, children, sub, tone }: { label: string; children: R
   }, []);
   return (
     <div className={`row ${fresh ? 'fresh' : ''}`}>
-      <span className="row-label">{label}</span>
+      <span className={`row-label ${hint ? 'has-hint' : ''}`} data-hint={hint}>{label}</span>
       <span className={`row-value ${tone ?? ''}`}><Flash value={children} /></span>
       {sub !== undefined && <span className="row-sub">{sub}</span>}
     </div>
@@ -57,11 +61,11 @@ export function Meter({ value, max = 100, width = 10 }: { value: number; max?: n
 }
 
 /** The one way a metric is shown: label, 10-cell bar, then a word or number. */
-export function Stat({ label, value, max = 100, word, tone }: {
-  label: string; value: number; max?: number; word: ReactNode; tone?: 'good' | 'bad' | 'amber';
+export function Stat({ label, value, max = 100, word, tone, hint }: {
+  label: string; value: number; max?: number; word: ReactNode; tone?: 'good' | 'bad' | 'amber'; hint?: string;
 }) {
   return (
-    <Row label={label} sub={<span className={tone ?? ''}>{word}</span>}>
+    <Row label={label} hint={hint} sub={<span className={tone ?? ''}>{word}</span>}>
       <Meter value={Math.min(value, max)} max={max} />
     </Row>
   );

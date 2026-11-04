@@ -93,11 +93,15 @@ export function Intelligence({ s }: { s: GameState }) {
   );
 }
 
-const ALLOC_ROWS: { k: AllocKey; label: string; shown: (s: GameState) => boolean }[] = [
-  { k: 'cap', label: 'capabilities', shown: () => true },
-  { k: 'safety', label: 'safety', shown: () => true },
-  { k: 'deploy', label: 'deployment', shown: (s) => s.jobs >= 5 },
-  { k: 'security', label: 'security', shown: (s) => s.firedEvents.weight_theft !== undefined || s.q >= 8 },
+const ALLOC_ROWS: { k: AllocKey; label: string; hint: string; shown: (s: GameState) => boolean }[] = [
+  { k: 'cap', label: 'capabilities', shown: () => true,
+    hint: 'Training smarter models. Builds your lead over China. Faster progress means more alignment risk.' },
+  { k: 'safety', label: 'safety', shown: () => true,
+    hint: 'Alignment research: making sure models want what we want. Works better as AI gets more capable.' },
+  { k: 'deploy', label: 'inference', shown: (s) => s.jobs >= 5,
+    hint: 'Running AI in the economy. Grows prosperity and trust, but automates jobs.' },
+  { k: 'security', label: 'security', shown: (s) => s.firedEvents.weight_theft !== undefined || s.q >= 8,
+    hint: 'Guarding model weights from theft. During a deal, also builds verification.' },
 ];
 
 /** The primary control. The labs own the split until you nationalize them. */
@@ -108,9 +112,9 @@ export function Allocation({ s }: { s: GameState }) {
   return (
     <Section title="compute allocation">
       <div className="line dim">{inControl(s) ? 'yours to set' : can ? 'labs decide · 1 nudge left' : 'labs decide · nudged'}</div>
-      {ALLOC_ROWS.filter((r) => r.shown(s)).map(({ k, label }) => (
+      {ALLOC_ROWS.filter((r) => r.shown(s)).map(({ k, label, hint }) => (
         <div key={k} className="alloc-row">
-          <Stat label={label} value={s.alloc[k]} max={1}
+          <Stat label={label} hint={hint} value={s.alloc[k]} max={1}
             word={<>{Math.round(s.alloc[k] * 100)}%{allocMax(s, k) < 1 && <span className="dim"> ≤{Math.round(allocMax(s, k) * 100)}</span>}</>} />
           <span className="alloc-btns">
             <button disabled={!can || s.alloc[k] <= 1e-9} onClick={() => move(k, -1)}>◂</button>

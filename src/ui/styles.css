@@ -75,6 +75,15 @@ input { font: inherit; }
 .row.fresh .row-label { color: var(--amber); }
 .flash { animation: flash 1s ease; }
 @keyframes flash { 0%, 40% { color: var(--amber); text-shadow: 0 0 10px var(--amber); } 100% { text-shadow: none; } }
+.has-hint { cursor: help; position: relative; text-decoration: underline dotted var(--faint); text-underline-offset: 3px; }
+.has-hint:hover::after {
+  content: attr(data-hint); position: absolute; left: 0; top: calc(100% + 4px); z-index: 30; width: 260px;
+  padding: 6px 8px; background: var(--bg); border: 1px solid var(--dim); color: var(--fg);
+  font-size: 12px; line-height: 1.45; white-space: normal; pointer-events: none;
+}
+/* Rows fade in with an animation, which gives each its own stacking context; lift the hovered one. */
+.row, .alloc-row { position: relative; }
+.row:hover, .alloc-row:hover { z-index: 40; }
 .alloc-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: baseline; }
 .alloc-btns button { color: var(--dim); padding: 0 6px; font-size: 15px; }
 .alloc-btns button:disabled { color: var(--faint); cursor: default; }
