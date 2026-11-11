@@ -101,6 +101,7 @@ Running list. ✅ = fixed, 📋 = folded into a step below, ❓ = awaiting the o
 | 13 | (2026-11-11) Too easy: won racing China once and Plan A once, first try each | Measured: safe Plan A wins 100%. Humans beat the race bots (39%) because the readout tells them when to ease off. Plan: Step 5 (Pressure) | 📋 Step 5 |
 | 14 | (2026-11-11) "Sometimes I'm just moving numbers around that aren't doing anything" | Confirmed. On Plan A, **every** split wins 100% (all capabilities, all safety, balanced, labs default). Most stats only matter at one threshold or only move the score. Plan: Step 4 (Teeth) | 📋 Step 4 |
 | 15 | (2026-11-11) Losing shouldn't only come from China getting there first; the AI itself should be able to take over | Today Loss of Control is only checked at the moment of ASI. Planned: a quarterly takeover hazard from Superhuman AI Researcher onward, for US, Chinese and open models. Containment (security share) lowers it, and warning shots are its visible precursors. Owner also approved: Teeth before 3b, elections can end a deal or a moratorium, China's posture changes mid-run | 📋 Step 4.3b, Step 5.4 |
+| 16 | (2026-11-11) A secret Chinese datacenter under Plan A should really lower your chances and force good decisions | Measured: it happens in 49% of safe Plan A runs, is found almost every time, never breaks out, and all those runs are won. Planned: the secret run is a real misaligned rival with takeover risk, detection depends on intel/verification built beforehand, every response costs something, and breakout happens if ignored | 📋 Step 5.3 |
 
 ### Design principles from playtesting
 - **Speed is never rewarded; falling behind is punished.** Going too slow fails for reasons from the scenario: China passes you, a deal stops appealing to them, China reaches ASI with weaker alignment, and AI-automated alignment research stalls without capable models.
@@ -312,11 +313,23 @@ Also: 23 of 34 decisions on Plan A make no measurable difference (playtest #6). 
    - At home: labs and Congress lobby to loosen the ceiling while the economy grows slowly under it.
    - Abroad: compute outside the deal (Gulf, rogue labs) grows.
    - China's compliance depends on your verification and its posture.
-3. **The readout lies more as models get smarter.** Deceptive bias grows with capability faster than general safety work shrinks it. Only interpretability (a decision line, or a fifth use of compute) keeps the readout honest late. The readout shows a range rather than one number, so the player decides under real uncertainty.
-4. **Warning shots: the visible steps toward a takeover (Step 4, item 3b).** An escalating ladder of ambiguous incidents: a model sandbagging its evals, then an agent copying itself off a lab cluster, then an AI-enabled cyberattack nobody claims. They come from the same hazard, so more of them means real danger. Some are false alarms, though, and each one forces a costly response (pause and lose lead, or press on). Incidents can come from China's or open models too, and you can't always tell whose.
-5. **Endings get stricter.** The alignment needed at superintelligence depends on how fast the final climb was: a fast takeoff needs more margin than a slow one. Flourishing also needs trust above a floor, because a public that rejects the transition doesn't get flourishing.
-6. **Score per year** (carried from the old Step 5): ending quality × prosperity per year, so Plan A doesn't win on length alone.
-7. **(Optional) Difficulty choice.** The hidden difficulty seed already exists. Show Normal / Hard on the launch screen.
+3. **China cheats for real** (playtest #16). Measured on safe Plan A (150 seeds): China builds a secret datacenter in **49%** of runs, it is found in nearly all of them, it never breaks out, the deal never collapses, and every one of those runs is still won. It should be the main way Plan A is lost:
+   - **The secret run is a real rival model.** It's trained with no safety work, so it is likely misaligned. It carries the takeover risk (Step 4, item 3b), and if it reaches superintelligence first, that's China's AI, not the deal's.
+   - **Finding it isn't automatic.** Detection depends on the intel and verification you built *before* it started. Find it late and the gap may already be too big.
+   - **Every response costs something:**
+     - Confront Beijing: it may deny, or move the site.
+     - Sabotage it: tension, and a chance of getting caught.
+     - Build your own secret run: you take the same AI risk.
+     - Collapse the deal and race from behind.
+     - Threaten strikes: a risk of war over Taiwan.
+   - **It grows fast enough to matter:** ignore it and a breakout really happens.
+   - **China cheats more when you give it reasons:** you fall behind on verification, tension is high, or its posture hardens (item 1).
+   - **Target:** on Plan A with little intel or verification, about half of the runs where China cheats are lost.
+4. **The readout lies more as models get smarter.** Deceptive bias grows with capability faster than general safety work shrinks it. Only interpretability (a decision line, or a fifth use of compute) keeps the readout honest late. The readout shows a range rather than one number, so the player decides under real uncertainty.
+5. **Warning shots: the visible steps toward a takeover (Step 4, item 3b).** An escalating ladder of ambiguous incidents: a model sandbagging its evals, then an agent copying itself off a lab cluster, then an AI-enabled cyberattack nobody claims. They come from the same hazard, so more of them means real danger. Some are false alarms, though, and each one forces a costly response (pause and lose lead, or press on). Incidents can come from China's or open models too, and you can't always tell whose.
+6. **Endings get stricter.** The alignment needed at superintelligence depends on how fast the final climb was: a fast takeoff needs more margin than a slow one. Flourishing also needs trust above a floor, because a public that rejects the transition doesn't get flourishing.
+7. **Score per year** (carried from the old Step 5): ending quality × prosperity per year, so Plan A doesn't win on length alone.
+8. **(Optional) Difficulty choice.** The hidden difficulty seed already exists. Show Normal / Hard on the launch screen.
 
 ### Success criteria (sim)
 
