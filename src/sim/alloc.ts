@@ -58,6 +58,8 @@ export function enforceAlloc(s: GameState) {
     const over = s.alloc[k] - allocMax(s, k);
     if (over <= 1e-9) continue;
     s.alloc[k] -= over;
+    // Capped capabilities compute goes where the labs make money: inference. Safety still needs you to steer it.
+    if (k === 'cap') { s.alloc.deploy += over; continue; }
     const rest = ALLOC_KEYS.filter((o) => o !== k && s.alloc[o] < allocMax(s, o));
     const tot = rest.reduce((a, o) => a + s.alloc[o], 0) || rest.length;
     for (const o of rest) s.alloc[o] += over * ((s.alloc[o] || 1) / tot);
@@ -91,3 +93,33 @@ export function safetyYield(cap: number) {
   if (cap < AC) return 0.6 + 0.4 * clamp((cap - 6.7) / (AC - 6.7), 0, 1);
   return Math.min(1.6, 1 + 0.6 * (cap - AC) / (SAR - AC));
 }
+
+// ── What each share does, as functions the sim and the screen both read ────────────
+
+/** Money for new chips at the current split and trust. 1 = the labs' default. The real value lags (s.funding). */
+export const fundingTarget = (s: GameState) =>
+  clamp((0.45 + 3.7 * s.alloc.deploy) * (0.75 + s.trust / 200), 0.6, 1.4);
+
+/** Growth of US chips per quarter. The economy pays for the buildout, so inference share means more chips next year. */
+export function rawGrowth(s: GameState) {
+  let g = (0.05 + s.computeBoost) * s.funding + (s.cap >= SAR ? 0.04 : 0) + (s.cap >= 10 ? 0.08 : 0);
+  if (s.flags.moratorium) g = Math.min(g, 0.01);
+  if (s.growthHold > 0) g = 0;
+  return Math.max(-0.05, g);
+}
+
+/** Months of lead gained (or lost) per year at the current pace. */
+export const leadTrend = (s: GameState) => (s.capRate - s.cnCapRate) * 24 * 4;
+
+/** Under a deal, inspectors see the split. A capabilities share above this reads as breakout prep. */
+export const DEAL_CAP_LIMIT = 0.4;
+export const dealCapStrain = (s: GameState) => (s.dealActive ? 12 * Math.max(0, s.alloc.cap - DEAL_CAP_LIMIT) : 0);
+
+/** Chance per quarter that China steals the frontier weights. Grows with the lead (more to steal) and with tension. */
+export function theftRisk(s: GameState) {
+  const lead = (s.cap - s.cnCap) * 24;
+  if (s.cap < 7.2 || lead <= 0) return 0;
+  return 0.06 * clamp(lead / 8, 0.5, 2) * (10 - s.security) / 10 * (s.tension >= 50 ? 1.5 : 1);
+}
+
+export const perYear = (pQuarter: number) => 1 - Math.pow(1 - pQuarter, 4);

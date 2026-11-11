@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { GameState } from '../../sim/types';
 import { ENDINGS } from '../../content/endings';
 import { AC, ALIGN_LOC, ASI, TED_AI, quarterLabel } from '../../sim/constants';
-import { difficultyLabel, peakCovert as peakCovertOf, pivotalDecision, score, shareText, timelineLabel, whatIfs } from '../../sim/reveal';
+import { difficultyLabel, endingCause, peakCovert as peakCovertOf, pivotalDecision, score, shareText, timelineLabel, whatIfs } from '../../sim/reveal';
 import { game } from '../../store/game';
 import { randomSeed } from '../../sim/rng';
 import { sfx } from '../audio';
@@ -30,7 +30,7 @@ export function Reveal({ s }: { s: GameState }) {
       <div className="reveal-inner">
         <div className="modal-kind">{quarterLabel(s.endQ ?? s.q)} · The Reveal</div>
         <h1 className="reveal-title">{e.title}{china && e.id !== 'loc' ? ' (Beijing)' : ''}</h1>
-        <p className="reveal-epitaph">{china ? 'China reached superintelligence first. ' : ''}{e.epitaph}</p>
+        <p className="reveal-epitaph">{endingCause(s)}{e.epitaph}</p>
         <div className="reveal-score">
           <div><span className="counter-label">Cumulative prosperity</span><b>{moneyStr(s.cumGdp)}</b></div>
           <div><span className="counter-label">Ending multiplier</span><b>×{e.multiplier}</b></div>

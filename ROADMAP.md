@@ -99,8 +99,8 @@ Running list. ✅ = fixed, 📋 = folded into a step below, ❓ = awaiting the o
 | 11 | Rename "deployment" to "inference"; add hover explanations to stat titles | Renamed (the internal key stays `deploy`). `Row`/`Stat` take a `hint` prop: a dotted-underlined label shows a one-line explanation on hover. All 4 allocation rows and all 23 other stat rows have one. New stats should always get a hint | ✅ |
 | 12 | Is nudging safety actually doing anything? | Yes, over a run (Plan C: 37% → 71% wins when nudging every quarter), but it was nearly invisible early: nudging 2027–2029 added only +0.4 research. Fixes: (1) the safety research row shows its rate, e.g. "low ▲0.5/yr", from the same `safetyRate` the sim uses; (2) safety research before Automated Coder now runs at 60–100% of full speed (was 30–100%), since human researchers carry it then. Balance roughly unchanged; rails ok | ✅ |
 | 13 | (2026-11-11) Too easy: won racing China once and Plan A once, first try each | Measured: safe Plan A wins 100%. Humans beat the race bots (39%) because the readout tells them when to ease off. Plan: Step 5 (Pressure) | 📋 Step 5 |
-| 14 | (2026-11-11) "Sometimes I'm just moving numbers around that aren't doing anything" | Confirmed. On Plan A, **every** split wins 100% (all capabilities, all safety, balanced, labs default). Most stats only matter at one threshold or only move the score. Plan: Step 4 (Teeth) | 📋 Step 4 |
-| 15 | (2026-11-11) Losing shouldn't only come from China getting there first; the AI itself should be able to take over | Today Loss of Control is only checked at the moment of ASI. Planned: a quarterly takeover hazard from Superhuman AI Researcher onward, for US, Chinese and open models. Containment (security share) lowers it, and warning shots are its visible precursors. Owner also approved: Teeth before 3b, elections can end a deal or a moratorium, China's posture changes mid-run | 📋 Step 4.3b, Step 5.4 |
+| 14 | (2026-11-11) "Sometimes I'm just moving numbers around that aren't doing anything" | Confirmed. On Plan A, **every** split won 100%. Step 4 shipped: Plan A now ranges 22% (all capabilities) to 96% (expert) by split, and every compute row shows its live effect | ✅ |
+| 15 | (2026-11-11) Losing shouldn't only come from China getting there first; the AI itself should be able to take over (✅ hazard shipped in Step 4; warning shots still Step 5) | Today Loss of Control is only checked at the moment of ASI. Planned: a quarterly takeover hazard from Superhuman AI Researcher onward, for US, Chinese and open models. Containment (security share) lowers it, and warning shots are its visible precursors. Owner also approved: Teeth before 3b, elections can end a deal or a moratorium, China's posture changes mid-run | 📋 Step 4.3b, Step 5.4 |
 | 16 | (2026-11-11) A secret Chinese datacenter under Plan A should really lower your chances and force good decisions | Measured: it happens in 49% of safe Plan A runs, is found almost every time, never breaks out, and all those runs are won. Planned: the secret run is a real misaligned rival with takeover risk, detection depends on intel/verification built beforehand, every response costs something, and breakout happens if ignored | 📋 Step 5.3 |
 
 ### Design principles from playtesting
@@ -240,7 +240,59 @@ Remove the 2029 plan menu. The scenario you end up in should emerge from what yo
 - Can you drift between paths, e.g. from a collapsed deal into a race? (Probably yes. That's the interesting part.)
 - What triggers the offers?
 
-## Step 4. Teeth: every number does something (playtest #14)
+## Step 4. Teeth: every number does something (playtest #14) ✅ done
+
+**Shipped (2026-11-11):**
+- **Money buys chips** (`fundingTarget`, `rawGrowth` in `sim/alloc.ts`): chip growth scales with inference share × trust, lagging about a year (`s.funding`).
+- **Inspectors see your split:** under a deal, a capabilities share above 40% costs 12 integrity per quarter per unit over (`dealCapStrain`).
+- **Alignment is held, not banked.** Your safety research sets a ceiling on how aligned a model can be (`alignCeiling`: 45 + 4.5 × safety), and the safety share sets how fast you approach it. Models drift away as capability rises unless safety gets 30% or more. The free gain during slow growth is gone. Alignment is frozen once superintelligence exists, so the ending judges the AI that arrived.
+- **AI takeover** (`sim/risk.ts`): from Superhuman AI Researcher on, there is a quarterly takeover risk for the US model, China's model and open models. It ends the run as Loss of Control, and the Reveal says whose AI it was. Containment = 0.08 × security for the US and 0.3 for China (+0.1 under a deal). Under a deal, China's alignment converges toward yours (faster with a joint lab).
+- **Theft is continuous:** quarterly risk = 6% × lead factor × (10 − security)/10, ×1.5 at tension 50+. A 3-quarter cooldown.
+- **Elections have teeth:** losing hands the split back to the labs, repeals the 25% cap and chip tracking, lifts a moratorium, quits a deal half the time, or slows a race and invites talks. **Midterms** (when trust is under 40) cut programs and repeal laws. Nationalizing needs trust 35+. Ratifying a deal with trust under 35 costs 15 integrity.
+- **The tension ladder:**
+  - 50+: Chinese cyberattacks (prosperity, security, trust).
+  - 70+: China's posture hardens one step. It re-arms below 50.
+- **Recommit:** the first restores +30 for −2%, the second +18 for −5%, and there is no third.
+- **The 25% cap law** sends the compute it cuts to inference, not safety, so the law protects the deal but doesn't steer safety for you.
+- **Every compute row shows its live effect** (lead mo/yr, research ▲/yr, chips %/yr, theft risk %/yr). Hints are updated.
+- **Bug fixed:** China's diffusion and theft copied the US *unreleased* algorithm backlog (after a pause or moratorium), so China jumped ahead the moment one lifted. Now China copies the deployed model (`deployedAlgo`).
+- **Tools:** `tools/bots.ts` holds the shared bots, with new **expert** (sees hidden state) and **random-dial** strategies. `npm run sim` prints a win-rate-by-steering table. `npm run audit` flips every decision across paired seeds.
+
+**Results (150 seeds, safe decisions; Flourishing win rate):**
+
+| Path | Labs (never touch) | All capabilities | All safety | Balanced | Random dial | Reactive | Expert | Spread |
+|---|---|---|---|---|---|---|---|---|
+| A | 63% | 22% | 87% | 89% | 83% | 96% | 96% | 74 |
+| C | 18% | 2% | 0% | 44% | 53% | 52% | 75% | 75 |
+| D | 0% | 0% | 46% | 9% | 0% | 45% | 67% | 67 |
+
+Was: A 100% for every split (spread 0), C spread 83, D spread 45.
+
+**Step 4 criteria:**
+- ✅ Spread ≥ 30 on every path.
+- ✅ The labs' default is never best.
+- ✅ Rails pass.
+
+**Against the owner's steering targets** (never touch 10–25%, reasonable ~50%, expert ~75%):
+- **C hits all three.**
+- **D is slightly hard:** expert 67%, labs 0%.
+- **A is still too easy for anyone who steers** (96%), and the labs' default wins 63%. That's Step 5's job: China cheating, adaptive China, stricter endings.
+
+**Decision audit** (`npm run audit`, 150 paired seeds, reactive bot, Plans A/C/D):
+- **Real swings (≥ 10 points somewhere):**
+  - Superintelligence keys;
+  - AI research cap (C 67);
+  - permits (C 50);
+  - merger, transparency, secret models (33–38 on C);
+  - D's "safety reviews" and "who runs the lab" (29–33);
+  - government talent, verification research, whistleblower, interpretability, theft, inspectors (A 15), chip sales, robot factories.
+- **Come up in most runs but change nothing (< 3 points on every path):** chip tracking, AI dividend, joint safety lab, open research, Beijing wants to talk, spy budget, share safety research, AI in government, Defense Production Act, the 2040 unpause, old chips, AI medicine, destruction pledge. Most act through levers that matter only in Step 5 (covert compute, intel, China's alignment) or only move prosperity. **Cut, merge or rewire these in the scenario redesign.**
+- **Not tested:** Plan B and S content, and the compute-site ladder (only reached by fast-tracking permits). The audit needs B/S bots and a fast-track bot to cover them.
+
+Other notable results:
+- **Shutdown, lifted late, with no steering** fell from 81% to 32%. With expert steering it's ~78%: under a moratorium, the safety share has to be steered too.
+- **Burn the Lead (safe-split bot)** still ends in the Gilded Cage 95% of the time, from power concentration. This is pre-existing and goes to Step 5.
+
 
 **The rule:** every number on screen must (a) feed something that can change the ending, and (b) show what it is doing right now. A stat that can't pass both gets cut.
 

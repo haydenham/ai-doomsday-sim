@@ -1,6 +1,7 @@
 import type { Choice, Fx, GameState, PendingEvent } from '../sim/types';
 import { concentratePower, declareCovert, moment, releaseOverhang, shiftStance, ticker } from '../sim/helpers';
-import { leadMonths } from '../sim/derived';
+import { enforceAlloc, labPreference, theftRisk } from '../sim/alloc';
+import { deployedAlgo, leadMonths } from '../sim/derived';
 import { AC, DEAL_RESUME_Q, TED_AI } from '../sim/constants';
 import { rand } from '../sim/rng';
 import { newNegotiation } from './negotiation';
@@ -37,6 +38,43 @@ const collapseDeal = (s: GameState, why: string) => {
   ticker(s, why, 'warn');
   moment(s, 'The US-China deal collapsed.', 'danger');
 };
+
+/** Laws a new majority repeals. */
+const repealLaws = (s: GameState) => {
+  s.flags.capLaw = false;
+  s.flags.chipTracking = false;
+  enforceAlloc(s);
+};
+
+/** What an administration elected against your AI policy does: the opposite of your doctrine. */
+function newAdminPlan(s: GameState) {
+  if (s.flags.moratorium) return 'lifts the moratorium';
+  if (s.dealActive) return 'calls the deal "a surrender" and may walk away';
+  if (s.path === 'D' || s.path === 'B') return 'slows the race and opens talks';
+  return 'hands the labs back their compute';
+}
+
+function loseElection(s: GameState) {
+  moment(s, 'You lost an election over AI.', 'info');
+  s.trust = 45;
+  s.alloc = { ...labPreference(s) };
+  if (!s.flags.nationalized) s.allocMoved = 0;
+  repealLaws(s);
+  if (s.flags.moratorium) {
+    s.flags.moratorium = false;
+    releaseOverhang(s, 0.3);
+    declareCovert(s);
+    ticker(s, 'The new administration ends the moratorium.', 'warn');
+  } else if (s.dealActive) {
+    if (rand(s) < 0.5) collapseDeal(s, 'The new administration withdraws from the AI deal.');
+    else ticker(s, 'The new administration keeps the deal, grudgingly.');
+  } else if (s.path === 'D' || s.path === 'B') {
+    s.computeBoost -= 0.01;
+    s.flags.dealEver = true;
+    s.flags.talksEndedQ = s.q - 4;
+    ticker(s, 'The new administration slows the race and signals it will talk to Beijing.');
+  }
+}
 
 export const EVENTS: EventDef[] = [
   // ── Scripted openers ──────────────────────────────────────────────────
@@ -91,19 +129,29 @@ export const EVENTS: EventDef[] = [
     when: (s) => s.q % 16 === 7 && s.q < 52,
     chance: 1,
     title: 'Election',
-    body: (s) => s.trust >= 40 ? 'Voters back your AI policy.' : 'Voters reject your AI policy. A new team cuts your programs.',
+    body: (s) => s.trust >= 40 ? 'Voters back your AI policy.' : `Voters reject your AI policy. The new administration ${newAdminPlan(s)}.`,
     choices: (s): Choice[] => [
       s.trust >= 40
         ? { label: 'Continue', chips: ['g:trust +5'], fx: { add: { trust: 5 } } }
-        : { label: 'Continue', chips: ['b:safety −1', 'b:verification −1', 'n:trust resets'],
-            fx: { add: { safety: -1, verification: -1 }, run: (st) => { st.trust = 45; moment(st, 'You lost an election over AI.', 'info'); } } },
+        : { label: 'Hand over', chips: ['b:split back to the labs', 'b:laws repealed', ...(s.dealActive ? ['b:may quit the deal'] : []), ...(s.flags.moratorium ? ['b:moratorium lifted'] : [])],
+            fx: { run: loseElection } },
     ],
+  },
+  {
+    // Midterms: Congress turns, programs get cut, but the doctrine stays.
+    id: 'midterms', once: false, kind: 'milestone',
+    when: (s) => s.q % 16 === 15 && s.q < 52 && s.trust < 40,
+    chance: 1,
+    title: 'Midterms',
+    body: 'Your party loses Congress. Your AI programs are first on the chopping block.',
+    choices: [{ label: 'Continue', chips: ['b:safety −1', 'b:verification −1', 'b:laws repealed'],
+      fx: { add: { safety: -1, verification: -1 }, run: (s) => { repealLaws(s); s.trust = 45; moment(s, 'You lost Congress over AI.', 'info'); } } }],
   },
   // ── Security & China ──────────────────────────────────────────────────
   {
-    id: 'weight_theft', kind: 'crisis',
-    when: (s) => s.cap >= 7.2 && s.security < 3 && leadMonths(s) > 0,
-    chance: (s) => 0.14 * (3 - s.security) / 3,
+    id: 'weight_theft', kind: 'crisis', once: false, cooldown: 3,
+    when: (s) => s.cap >= 7.2 && leadMonths(s) > 0,
+    chance: theftRisk,
     title: 'Weights stolen',
     body: 'A Meridian insider sent our best model to China.',
     choices: [
@@ -112,9 +160,17 @@ export const EVENTS: EventDef[] = [
       { label: 'Expel diplomats', lean: 'hawk', chips: ['g:trust +3', 'b:tension +15'], fx: { add: { tension: 15, trust: 3 } } },
     ],
     onFire: {
-      run: (s) => { s.cnAlgo = Math.max(s.cnAlgo, s.algo * 0.9); },
+      // They get the deployed model, not research still held back by a pause or treaty.
+      run: (s) => { s.cnAlgo = Math.max(s.cnAlgo, 0.9 * deployedAlgo(s)); },
       moment: 'China stole your frontier model\'s weights.',
     },
+  },
+  {
+    // Tension 50+: China hits back below the threshold of war.
+    id: 'cn_cyber', once: false, cooldown: 4,
+    when: (s) => s.tension >= 50, chance: 0.3,
+    fx: { mul: { gdp: 0.99 }, add: { security: -0.5, trust: -2 },
+      headline: 'Chinese hackers black out three US datacenters. Beijing denies everything.' },
   },
   {
     id: 'taiwan_crisis', once: false, cooldown: 8, kind: 'crisis',
@@ -197,13 +253,21 @@ export const EVENTS: EventDef[] = [
     id: 'deal_fraying', once: false, cooldown: 8, kind: 'crisis',
     when: (s) => s.dealActive && s.dealIntegrity < 30, chance: 1,
     title: 'The deal is fraying',
-    body: 'Inspectors are being turned away.',
-    choices: [
-      { label: 'Recommit', lean: 'dove', chips: ['g:deal +30', 'b:prosperity −2%', 'b:lift export controls'],
-        fx: { add: { dealIntegrity: 30 }, mul: { gdp: 0.98 }, run: (s) => { s.exportControls = 0; } } },
-      { label: 'Let it lapse', lean: 'race', chips: ['g:no more limits', 'b:race resumes', 'b:tension +20'],
-        fx: { run: (s) => collapseDeal(s, 'The US-China AI deal lapses. Both sides restart their training runs within days.') } },
-    ],
+    body: (s) => Number(s.flags.recommits ?? 0) >= 2 ? 'Inspectors are being turned away. Beijing won\'t recommit a third time.' : 'Inspectors are being turned away.',
+    // Each recommit costs more and restores less. There is no third.
+    choices: (s): Choice[] => {
+      const n = Number(s.flags.recommits ?? 0);
+      const lapse: Choice = { label: n >= 2 ? 'It\'s over' : 'Let it lapse', lean: 'race', chips: ['g:no more limits', 'b:race resumes', 'b:tension +20'],
+        fx: { run: (st) => collapseDeal(st, 'The US-China AI deal lapses. Both sides restart their training runs within days.') } };
+      if (n >= 2) return [lapse];
+      const restore = n === 0 ? 30 : 18;
+      const cost = n === 0 ? 0.98 : 0.95;
+      return [
+        { label: 'Recommit', lean: 'dove', chips: [`g:deal +${restore}`, `b:prosperity −${Math.round((1 - cost) * 100)}%`, 'b:lift export controls', ...(n === 1 ? ['b:last time'] : [])],
+          fx: { add: { dealIntegrity: restore }, mul: { gdp: cost }, run: (st) => { st.exportControls = 0; st.flags.recommits = n + 1; } } },
+        lapse,
+      ];
+    },
   },
   {
     id: 'cn_breakout', kind: 'crisis',

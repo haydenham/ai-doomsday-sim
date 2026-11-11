@@ -170,6 +170,11 @@ export interface GameState {
   dealFloor: number;
   /** Plan A: quarters the ceiling schedule runs ahead (+) or behind (−). */
   dealShift: number;
+  /** Money for new chips, from the economy (inference share × trust). Lags about a year. 1 = normal. */
+  funding: number;
+  /** Smoothed capability growth per quarter, US and China (drives the "lead ± mo/yr" readout). */
+  capRate: number;
+  cnCapRate: number;
 
   // China
   cnRaw: number;
@@ -220,6 +225,8 @@ export interface GameState {
   moments: Moment[];
   decisions: Decision[];
 
+  /** Whose AI took over, if one did before or at superintelligence. */
+  takeover: 'us' | 'cn' | 'open' | null;
   asiQ: number | null;
   asiBy: 'us' | 'cn' | null;
   ending: EndingId | null;

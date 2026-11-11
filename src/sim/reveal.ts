@@ -40,11 +40,22 @@ export function whatIfs(s: GameState): string[] {
   if (!s.panels.includes('alignment')) out.push('You never did enough alignment research to see a readout. More compute on safety would have shown you this chart while it was happening.');
   if (s.flags.dealEver && s.verification < 2) out.push('You made a deal with almost no verification. Inspectors had little to check with.');
   if (peakCovert(s) > 0 && s.intel < 2) out.push('China ran covert compute the whole time. Better intelligence would have found it.');
+  if (s.takeover === 'us') out.push('Your model escaped before superintelligence. More safety share, or more security to contain it, would have held it.');
+  if (s.takeover === 'cn') out.push('China\'s model escaped. Sharing alignment research, or a deal with a joint safety lab, would have made it safer.');
   if (s.asiBy === 'cn') out.push('China got there first. Securing the labs or holding export controls would have kept your lead.');
   if (s.powerConc >= 60 && s.ending === 'gilded') out.push('The AI was aligned, but with very few people. Open research and an AI dividend spread power out.');
   if (s.path === 'S' && s.ending === 'stagnation') out.push('The moratorium held, and so did the economy. Lifting it slowly, late, might have worked.');
   if (s.algoTier >= 6 && s.safety < 3) out.push('Once models started thinking in vectors instead of words, your evals got much blurrier. Interpretability work offsets that.');
   return out.slice(0, 3);
+}
+
+/** One line on how the run was lost or won, prepended to the epitaph. */
+export function endingCause(s: GameState) {
+  if (s.takeover === 'us') return 'Your own AI took over before anyone reached superintelligence. ';
+  if (s.takeover === 'cn') return 'China\'s AI escaped its handlers and took over. ';
+  if (s.takeover === 'open') return 'An open model no one was watching took over. ';
+  if (s.asiBy === 'cn') return 'China reached superintelligence first. ';
+  return '';
 }
 
 export const peakCovert = (s: GameState) => Math.max(0, ...s.history.map((h) => h.covert));

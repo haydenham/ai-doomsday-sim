@@ -1,7 +1,10 @@
 import type { AllocKey, GameState, Intent } from '../sim/types';
 import { capLevel, quarterLabel } from '../sim/constants';
 import { agentCopies, leadMonths } from '../sim/derived';
-import { ALLOC_STEP, allocMax, allowanceLeft, inControl, safetyRate, shiftAlloc } from '../sim/alloc';
+import {
+  ALLOC_STEP, DEAL_CAP_LIMIT, allocMax, allowanceLeft, dealCapStrain, fundingTarget, inControl, leadTrend, perYear, rawGrowth,
+  safetyRate, shiftAlloc, theftRisk,
+} from '../sim/alloc';
 import { game } from '../store/game';
 import { sfx } from './audio';
 import { rand } from '../sim/rng';
@@ -25,13 +28,13 @@ export function Status({ s }: { s: GameState }) {
   return (
     <Section title="united states">
       {s.q >= 1 && <Row label="economy" hint="US GDP per year. Your score is the economy over time, scaled by how the story ends." sub={<span className={growth >= 0 ? 'good' : 'bad'}>{growth >= 0 ? '▲' : '▼'}{Math.abs(growth).toFixed(1)}%/yr</span>}>{moneyStr(s.gdp)}</Row>}
-      {seen(s, 'trust') && <Stat label="public trust" hint="How much the public backs you. Low trust loses elections and rules out a shutdown." value={s.trust} word={Math.round(s.trust)} tone={s.trust < 30 ? 'bad' : undefined} />}
+      {seen(s, 'trust') && <Stat label="public trust" hint="How much the public backs you. Under 40 you lose elections, and the new team undoes your policy." value={s.trust} word={Math.round(s.trust)} tone={s.trust < 30 ? 'bad' : undefined} />}
       {seen(s, 'powerConc') && <Stat label="power concentration" hint="How few people control AI. 60+ when superintelligence arrives means the Gilded Cage." value={s.powerConc} word={Math.round(s.powerConc)} tone={s.powerConc >= 60 ? 'bad' : undefined} />}
       {s.jobs >= 5 && <Stat label="jobs automated" hint="Share of jobs now done by AI. Job losses wear down public trust." value={s.jobs} word={`${Math.round(s.jobs)}%`} />}
       {s.panels.includes('compute') && <Row label="frontier AI" hint="The most capable US AI system right now.">{capLevel(s.cap).cur.name.toLowerCase()}</Row>}
-      {seen(s, 'safety') && <Lever label="safety research" hint="Your alignment science. Slows models drifting from human goals and sharpens the readout." value={s.safety} perYear={s.panels.includes('allocation') ? 4 * safetyRate(s) : undefined} />}
+      {seen(s, 'safety') && <Lever label="safety research" hint="Your alignment science. It only protects you while the safety share keeps funding it. Also sharpens the readout." value={s.safety} perYear={s.panels.includes('allocation') ? 4 * safetyRate(s) : undefined} />}
       {seen(s, 'verification') && <Lever label="verification" hint="Your ability to check that others follow the rules. Makes deals stronger and catches cheating." value={s.verification} />}
-      {seen(s, 'security') && <Lever label="lab security" hint="How well model weights are guarded. Weak security invites theft by China." value={s.security} />}
+      {seen(s, 'security') && <Lever label="lab security" hint="How well model weights are guarded and capable models contained. Weak security invites theft, and escapes." value={s.security} />}
     </Section>
   );
 }
@@ -94,15 +97,44 @@ export function Intelligence({ s }: { s: GameState }) {
   );
 }
 
+const pct = (x: number) => `${Math.round(x * 100)}%`;
+const signed = (x: number, unit: string) => `${x >= 0 ? '+' : '−'}${Math.abs(x).toFixed(Math.abs(x) < 10 ? 1 : 0)}${unit}`;
+
+/** Live effect of each row, in a few words, from the same functions the sim runs. Tone: '' | 'good' | 'bad'. */
+function allocEffect(s: GameState, k: AllocKey): [string, string] {
+  switch (k) {
+    case 'cap': {
+      if (s.flags.moratorium) return ['halted', ''];
+      if (s.dealActive && s.alloc.cap > DEAL_CAP_LIMIT + 1e-9) return [`deal −${(4 * dealCapStrain(s)).toFixed(0)}/yr`, 'bad'];
+      if (s.pauseCap !== null && s.capRaw > s.cap + 0.02) return ['at treaty cap', ''];
+      const t = leadTrend(s);
+      return [`lead ${signed(t, ' mo/yr')}`, t >= 0 ? '' : 'bad'];
+    }
+    case 'safety': {
+      const r = 4 * safetyRate(s);
+      return r >= 0.05 ? [`research ▲${r.toFixed(1)}/yr`, ''] : ['research stalled', 'bad'];
+    }
+    case 'deploy': {
+      const g = Math.pow(1 + rawGrowth(s), 4) - 1;
+      const dir = fundingTarget(s) - s.funding;
+      return [`chips ${signed(g * 100, '%/yr')}${dir > 0.03 ? ' ▲' : dir < -0.03 ? ' ▼' : ''}`, g < 0.1 ? 'bad' : ''];
+    }
+    case 'security': {
+      const r = perYear(theftRisk(s));
+      return [r > 0 ? `theft risk ${pct(r)}/yr` : 'nothing to steal', r >= 0.2 ? 'bad' : ''];
+    }
+  }
+}
+
 const ALLOC_ROWS: { k: AllocKey; label: string; hint: string; shown: (s: GameState) => boolean }[] = [
   { k: 'cap', label: 'capabilities', shown: () => true,
-    hint: 'Training smarter models. Builds your lead over China. Faster progress means more alignment risk.' },
+    hint: 'Training smarter models. Builds your lead over China. Faster progress means more alignment risk. Under a deal, more than 40% wears the deal down.' },
   { k: 'safety', label: 'safety', shown: () => true,
-    hint: 'Alignment research: making sure models want what we want. Works better as AI gets more capable.' },
+    hint: 'Alignment research. Only pays off while compute keeps going to it: cut it and capable models drift from human goals.' },
   { k: 'deploy', label: 'inference', shown: (s) => s.jobs >= 5,
-    hint: 'Running AI in the economy. Grows prosperity and trust, but automates jobs.' },
+    hint: 'Running AI in the economy. Its revenue buys next year\'s chips (takes about a year), grows prosperity and trust, but automates jobs.' },
   { k: 'security', label: 'security', shown: (s) => s.firedEvents.weight_theft !== undefined || s.q >= 8,
-    hint: 'Guarding model weights from theft. During a deal, also builds verification.' },
+    hint: 'Guarding model weights from theft, and keeping capable models contained. During a deal, also builds verification.' },
 ];
 
 /** The primary control. The labs own the split until you nationalize them. */
@@ -113,7 +145,9 @@ export function Allocation({ s }: { s: GameState }) {
   return (
     <Section title="compute allocation">
       <div className="line dim">{inControl(s) ? 'yours to set' : can ? 'labs decide · 1 nudge left' : 'labs decide · nudged'}</div>
-      {ALLOC_ROWS.filter((r) => r.shown(s)).map(({ k, label, hint }) => (
+      {ALLOC_ROWS.filter((r) => r.shown(s)).map(({ k, label, hint }) => {
+        const [effect, tone] = allocEffect(s, k);
+        return (
         <div key={k} className="alloc-row">
           <Stat label={label} hint={hint} value={s.alloc[k]} max={1}
             word={<>{Math.round(s.alloc[k] * 100)}%{allocMax(s, k) < 1 && <span className="dim"> ≤{Math.round(allocMax(s, k) * 100)}</span>}</>} />
@@ -121,8 +155,10 @@ export function Allocation({ s }: { s: GameState }) {
             <button disabled={!can || s.alloc[k] <= 1e-9} onClick={() => move(k, -1)}>◂</button>
             <button disabled={!can || s.alloc[k] >= allocMax(s, k) - 1e-9} onClick={() => move(k, 1)}>▸</button>
           </span>
+          <span className={`alloc-effect ${tone || 'dim'}`}>{effect}</span>
         </div>
-      ))}
+        );
+      })}
     </Section>
   );
 }
@@ -169,7 +205,7 @@ export function World({ s }: { s: GameState }) {
     <Section title="world">
       <WorldMap s={s} />
       <Row label="lead over china" hint="How far ahead US AI is, in months. Fall behind and China decides how this ends." tone={lead >= 0 ? 'good' : 'bad'}>{`${lead >= 0 ? '+' : '−'}${Math.abs(lead).toFixed(1)} mo`}</Row>
-      <Stat label="tension" hint="US–China hostility. High tension brings crises and makes deals harder." value={s.tension} word={Math.round(s.tension)} tone={s.tension >= 70 ? 'bad' : undefined} />
+      <Stat label="tension" hint="US–China hostility. 50+: China retaliates. 70+: its hardliners take over. 90+: Taiwan." value={s.tension} word={Math.round(s.tension)} tone={s.tension >= 70 ? 'bad' : undefined} />
       {seen(s, 'intel') && <Lever label="intelligence" hint="Your spy capability. Reveals China's intentions, red lines and hidden datacenters." value={s.intel} />}
       {seen(s, 'intel') && <Row label="china's posture" hint="Your best guess at China's intentions. Better intelligence, better guess." sub={<span className="dim">{Math.round(a.conf * 100)}% sure</span>}>{a.intent}</Row>}
       {a.covertSeen && <div className="line bad">unexplained power use near xinjiang</div>}
@@ -181,7 +217,7 @@ export function Deal({ s }: { s: GameState }) {
   return (
     <Section title="the deal">
       {s.dealActive
-        ? <Stat label="integrity" hint="How well the deal is holding. At 0 it collapses." value={s.dealIntegrity} word={Math.round(s.dealIntegrity)} tone={s.dealIntegrity < 30 ? 'bad' : undefined} />
+        ? <Stat label="integrity" hint="How well the deal is holding. A capabilities share over 40% wears it down. At 0 it collapses." value={s.dealIntegrity} word={Math.round(s.dealIntegrity)} tone={s.dealIntegrity < 30 ? 'bad' : undefined} />
         : <div className="line bad">no deal in force</div>}
     </Section>
   );

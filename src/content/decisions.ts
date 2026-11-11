@@ -222,6 +222,8 @@ export const DECISIONS: DecisionDef[] = [
   {
     id: 'nationalize', title: 'Nationalize', phases: POST,
     text: 'Bring the frontier labs under federal control.',
+    // Seizing the labs needs a public behind you.
+    when: (s) => s.trust >= 35,
     options: [
       { label: 'Do it', lean: 'power', chips: ['g:you set the compute split', 'g:security +3', 'b:power → 80+', 'b:trust −6'],
         fx: { add: { security: 3, computeBoost: 0.01, trust: -6 }, flags: { nationalized: true },
@@ -414,7 +416,7 @@ export const DECISIONS: DecisionDef[] = [
     when: (s) => s.dealActive,
     options: [
       { label: 'Build it', lean: 'dove', chips: ['g:safety +1', 'g:deal +5', 'b:China learns', 'h:'],
-        fx: { add: { safety: 1, cnAlignment: 15, dealIntegrity: 5 }, mul: { cnAlgo: 1.05 } } },
+        fx: { add: { safety: 1, cnAlignment: 15, dealIntegrity: 5 }, mul: { cnAlgo: 1.05 }, flags: { jointLab: true } } },
       { label: 'Separate labs', lean: 'hawk', chips: ['g:lead kept', 'b:deal −3'], fx: { add: { dealIntegrity: -3 } } },
     ],
   },

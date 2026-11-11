@@ -88,6 +88,7 @@ input { font: inherit; }
 .alloc-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: baseline; }
 .alloc-btns button { color: var(--dim); padding: 0 6px; font-size: 15px; }
 .alloc-btns button:disabled { color: var(--faint); cursor: default; }
+.alloc-effect { grid-column: 1 / -1; font-size: 0.85em; margin: -3px 0 3px; text-align: right; padding-right: 52px; }
 .meter { color: var(--fg); letter-spacing: -1px; font-size: 12px; }
 .meter-off { color: var(--faint); }
 .unstable .row-value { animation: jitter .2s infinite steps(2); }

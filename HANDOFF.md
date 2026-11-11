@@ -11,8 +11,8 @@ Playable local prototype: a real-time, decision-driven strategy game about US AI
 - **v1** (dashboard plus a hand of policy cards with political capital) was **rejected** as cluttered, wordy and not gamified.
 - **v2** (current) was received very well ("wayyyy better"). Terminal UI, one decision at a time, slow reveal.
 - **Steps 0–3 of the roadmap are done:** the timer bar was removed (0), timelines follow AI 2040 (1), metrics share one bar-plus-word style (2), and **compute allocation** is the primary control (3, `sim/alloc.ts`).
-- **Next (planned 2026-11-11, after the owner found it too easy):** Step 4 **Teeth** (every number must change the ending and show its live effect; on Plan A every split wins 100% today), then Step 5 **Pressure** (adaptive China, a deal you have to fight to keep, a readout that lies more, warning shots, stricter endings). See ROADMAP.
-- **Waiting on the owner:** go-ahead on Step 4, and where **Step 3b, emergent paths** goes in the order.
+- **Step 4 (Teeth) done 2026-11-11:** every compute row has a real, visible effect; there's an AI takeover risk before superintelligence; theft, elections, tension and recommits have teeth. Results are in ROADMAP.
+- **Next:** the owner wants to lay out the full scenario for each plan (A, B, C, D, S) and go back to the drawing board before Step 5 (Pressure).
 
 ## Run
 
@@ -21,6 +21,7 @@ npm install
 npm run dev            # http://localhost:5173  (?fast=4 speeds the clock 4×)
 npm run sim            # headless balance runner, 300 seeds per bot; prints milestone dates and AI 2040 rails checks
 npm run sim -- 150 planA   # one bot, verbose first run
+npm run audit          # flips every decision across paired seeds on A/C/D; flags ones that change nothing (~10 min)
 npm run typecheck && npm run build
 ```
 
@@ -77,7 +78,9 @@ tools/sim.ts   bots choose options by lean; prints ending distribution per strat
 - `rdMult` is that speedup, log-interpolated between rungs. Progress scales as `rdMult^0.9`.
 - **Compute** starts at US 50M and China 6M H100e. China's chips count 5× (`CN_EFFICIENCY`: one national project plus fast-following), so the starting lead is ~8 months.
 - **Plan A ceiling** (`dealCeiling`): frozen at signing until Q1 2030, AC ~mid-2030, TED-AI ~2035, near-flat until the 2040 unpause. `dealShift` (±4 quarters) moves it, set by the "Treaty review" decision. A deal limits capability by the ceiling; only a moratorium slows research itself.
-- **Endings** (on ASI, or at END_Q):
+- **Alignment** approaches a ceiling set by safety research (`alignCeiling`) at a speed set by the safety share, drifts down with capability unless safety ≥ 30%, and is frozen once ASI exists.
+- **AI takeover** (`sim/risk.ts`): from SAR on, a quarterly risk for US, Chinese and open models; security share = containment.
+- **Endings** (on ASI, on takeover, or at END_Q):
   - Loss of Control if alignment < 40;
   - Gilded Cage if power concentration ≥ 60;
   - Flourishing otherwise;

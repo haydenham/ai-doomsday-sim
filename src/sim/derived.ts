@@ -16,6 +16,9 @@ export function baseRdMult(cap: number) {
   return Math.pow(10, Math.log10(y0) + f * (Math.log10(y1) - Math.log10(y0)));
 }
 
+/** The algorithmic efficiency of the model actually deployed (excludes research a pause or treaty holds back). */
+export const deployedAlgo = (s: GameState) => Math.min(s.algo, Math.pow(10, s.cap + CAP_OFFSET) / s.raw);
+
 export const effectiveCompute = (s: GameState) => s.raw * s.algo;
 
 /** Parallel AI researcher copies (flavor stat for the Intelligence panel). */

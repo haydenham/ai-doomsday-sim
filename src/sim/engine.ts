@@ -5,8 +5,9 @@ import {
 } from './constants';
 import { chance, gauss, pick, rand, range, weighted } from './rng';
 import { applyFx, clamp, moment, ticker, unlockComputeTier } from './helpers';
-import { baseRdMult, capOf, leadMonths } from './derived';
-import { LAB_ALLOC, capFactor, driftAlloc, safetyRate } from './alloc';
+import { baseRdMult, capOf, deployedAlgo, leadMonths } from './derived';
+import { LAB_ALLOC, capFactor, dealCapStrain, driftAlloc, fundingTarget, rawGrowth, safetyRate } from './alloc';
+import { alignCeiling, takeoverRisks } from './risk';
 import { ALGO_TIERS } from '../content/ladders';
 import { PANELS } from '../content/panels';
 import { COUNTRIES } from '../content/countries';
@@ -39,7 +40,7 @@ export function newGame(seed: number): GameState {
     trust: 52, powerConc: 30, tension: 20, jobs: 0, rdMult: 1,
     safety: 0, verification: 0, intel: 0, security: 1, openness: 0, deployment: 0, computeBoost: 0,
     exportControls: 0, rdBoost: 0, growthHold: 0, pauseCap: null, overhangRate: 1, ubi: false,
-    dealFloor: 0, dealShift: 0, alloc: { ...LAB_ALLOC }, allocMoved: 0,
+    dealFloor: 0, dealShift: 0, alloc: { ...LAB_ALLOC }, allocMoved: 0, funding: 1, capRate: 0, cnCapRate: 0,
     cnRaw, cnAlgo, cnCap: capOf(cnRaw, cnAlgo), cnRdMult: 1, cnPauseCap: null, covert: 0,
     cnAlignment: range(s, 25, 55), intent,
     alignment: range(s, 56, 68), difficulty: range(s, 0.75, 1.35), timeline: range(s, 0.85, 1.2),
@@ -51,7 +52,7 @@ export function newGame(seed: number): GameState {
     panels: ['desk'], panelsUnlockedAt: { desk: 0 }, leans: {},
     pending: null, forkPending: false,
     ticker: [], tickerSeq: 0, history: [], moments: [], decisions: [],
-    asiQ: null, asiBy: null, ending: null, endQ: null,
+    takeover: null, asiQ: null, asiBy: null, ending: null, endQ: null,
   } satisfies Omit<GameState, 'rngState'>);
   updateReadout(s);
   ticker(s, 'You run AI policy for the United States.');
@@ -89,16 +90,15 @@ function advance(s: GameState, dt: number) {
   // US compute and algorithms
   const rdFactor = clamp(1 + s.rdBoost + (s.path === 'D' ? 0.3 : 0), 0.1, 4);
   s.rdMult = 1 + (baseRdMult(s.cap) - 1) * rdFactor;
-  let rawG = 0.05 + s.computeBoost + (s.cap >= SAR ? 0.04 : 0) + (s.cap >= 10 ? 0.08 : 0);
-  if (moratorium) rawG = Math.min(rawG, 0.01);
+  const rawG = rawGrowth(s);
   let algoG = ALGO_BASE * s.timeline * Math.pow(s.rdMult, RD_ELASTICITY) * capFactor(s)
     * (s.cap < AC ? clamp(1 + 0.5 * s.rdBoost, 0.5, 2) : 1);
   if (moratorium) algoG = 0;
   // A deal limits capability by its ceiling, not by slowing research; a moratorium slows research itself.
   if (s.pauseCap !== null && !s.dealActive) algoG *= 0.35;
   if (s.flags.burnLead && lead > 3) algoG *= 0.7;
-  if (hold) { rawG = 0; algoG = 0; }
-  s.raw *= Math.pow(1 + Math.max(-0.05, rawG), dt);
+  if (hold) algoG = 0;
+  s.raw *= Math.pow(1 + rawG, dt);
   s.algo *= Math.pow(1 + algoG, dt);
   s.capRaw = capOf(s.raw, s.algo);
   if (s.dealActive && s.pauseCap !== null) s.pauseCap = s.cnPauseCap = dealCeiling(s);
@@ -106,6 +106,7 @@ function advance(s: GameState, dt: number) {
   const prevCap = s.cap;
   const target = s.pauseCap !== null ? Math.min(s.capRaw, s.pauseCap) : s.capRaw;
   s.cap = target > s.cap ? Math.min(target, s.cap + s.overhangRate * dt) : target;
+  s.capRate += ((s.cap - prevCap) / dt - s.capRate) * Math.min(1, 2 * dt);
 
   // Compute allocation: safety research (done more and more by AIs), lab security, verification.
   s.safety = Math.min(12, s.safety + dt * safetyRate(s));
@@ -120,8 +121,13 @@ function advance(s: GameState, dt: number) {
   const neuralese = s.algoTier >= 6 ? 1.15 : 1;
   const shield = Math.max(0.35, 1 - 0.055 * s.safety);
   const loss = dC * 5 * s.difficulty * (0.3 + 1.0 * rate) * pathMul * neuralese * shield;
-  const gain = dt * 0.45 * s.safety * Math.max(0, 1 - s.alignment / 110) + (rate < 0.02 ? dt * 0.1 : 0);
-  s.alignment = clamp(s.alignment - loss + gain, 0, 100);
+  // Held, not banked. Your safety science sets how aligned you *can* make a model (alignCeiling);
+  // the safety share sets how fast you get there. Stop funding it and the gain stops.
+  const gain = dt * 0.15 * s.alloc.safety * Math.max(0, alignCeiling(s) - s.alignment);
+  // Capable models drift toward their own goals unless a real share of compute keeps checking them.
+  const drift = dt * 0.5 * Math.max(0, s.cap - 7.5) * Math.max(0, 1 - s.alloc.safety / 0.3);
+  // The ending judges the AI that arrived; alignment is fixed once superintelligence exists.
+  if (!s.asiBy) s.alignment = clamp(s.alignment - loss - drift + gain, 0, 100);
 
   // China
   const desperation = cnDesperation(s);
@@ -132,7 +138,8 @@ function advance(s: GameState, dt: number) {
   let cnAlgoG = 0.033 * s.timeline * Math.pow(s.cnRdMult, RD_ELASTICITY);
   if (s.cnPauseCap !== null && !s.dealActive) cnAlgoG *= s.flags.moratorium ? 0 : 0.35;
   const diffusion = clamp(0.07 + 0.03 * s.openness - 0.012 * s.security, 0.01, 0.4);
-  const gap = Math.max(0, Math.log(s.algo * CN_EFFICIENCY) - Math.log(s.cnAlgo));
+  // China copies what's deployed, not research held back by a pause or treaty.
+  const gap = Math.max(0, Math.log(deployedAlgo(s) * CN_EFFICIENCY) - Math.log(s.cnAlgo));
   s.cnAlgo *= Math.exp(dt * (Math.log(1 + cnAlgoG) + diffusion * gap));
   if (s.covert > 0) s.covert *= Math.pow(1.12, dt);
   const cnCapRaw = capOf(s.cnRaw, s.cnAlgo);
@@ -140,7 +147,9 @@ function advance(s: GameState, dt: number) {
   const cnTarget = declared + (s.covert > 0 ? Math.log10(1 + s.covert / s.cnRaw) : 0);
   // Under a deal both sides lift the cap at the same agreed pace.
   const cnRate = s.dealActive ? s.overhangRate : 1;
+  const prevCn = s.cnCap;
   s.cnCap = cnTarget > s.cnCap ? Math.min(cnTarget, s.cnCap + cnRate * dt) : cnTarget;
+  s.cnCapRate += ((s.cnCap - prevCn) / dt - s.cnCapRate) * Math.min(1, 2 * dt);
 
   // Economy
   const auto = Math.max(0, s.cap - 6.6);
@@ -180,6 +189,8 @@ function quarterBoundary(s: GameState) {
 
   // Politics
   driftAlloc(s);
+  // The economy pays for next year's chips.
+  s.funding += (fundingTarget(s) - s.funding) * 0.25;
   s.trust = clamp(s.trust + 8 * (s.alloc.deploy - LAB_ALLOC.deploy) + (50 - s.trust) * 0.04 - s.jobs * 0.035 * (s.ubi ? 0.3 : 1) - (s.flags.moratorium ? 0.4 : 0), 0, 100);
   s.tension = clamp(s.tension - 2 + cnDesperation(s) * 3, 0, 100);
   const pcDrift = (s.cap >= AC ? 0.5 : 0) * (s.path === 'B' || s.path === 'D' ? 1.6 : 1) - 0.12 * s.openness;
@@ -189,8 +200,12 @@ function quarterBoundary(s: GameState) {
 
   if (s.dealActive) {
     const decay = 1.5 + (s.intent === 'racing' ? 2.5 : s.intent === 'opportunistic' ? 1 : 0) - 0.25 * s.verification;
-    s.dealIntegrity = clamp(s.dealIntegrity - Math.max(0.3, decay), 0, 100);
+    // Inspectors see the split: a big capabilities share looks like breakout prep.
+    s.dealIntegrity = clamp(s.dealIntegrity - Math.max(0.3, decay) - dealCapStrain(s), 0, 100);
+    // Shared inspections and norms pull China's safety practice toward yours.
+    s.cnAlignment += (s.alignment - s.cnAlignment) * (s.flags.jointLab ? 0.05 : 0.02);
   }
+  tensionLadder(s);
 
   updateReadout(s);
   algoBreakthrough(s);
@@ -211,8 +226,35 @@ function quarterBoundary(s: GameState) {
 
   if (s.q === FORK_Q && !s.path) s.forkPending = true;
 
+  rollTakeover(s);
   s.history.push(snapshot(s));
   checkEnding(s);
+}
+
+/** Tension 50: China retaliates (see events). 70: its leadership hardens one step. Re-arms once tension falls under 50. */
+function tensionLadder(s: GameState) {
+  if (s.tension < 50) s.flags.hardened = false;
+  if (s.tension >= 70 && !s.flags.hardened && s.intent !== 'racing') {
+    s.flags.hardened = true;
+    const from = s.intent;
+    s.intent = s.intent === 'cooperative' ? 'opportunistic' : 'racing';
+    ticker(s, 'Beijing\'s hardliners take over AI policy.', 'warn');
+    moment(s, `Tension hardened China's leadership from ${from} to ${s.intent}.`, 'hidden');
+  }
+}
+
+/** Any frontier model past Superhuman AI Researcher can slip control. See sim/risk.ts. */
+function rollTakeover(s: GameState) {
+  if (s.takeover || s.asiBy) return;
+  const r = takeoverRisks(s);
+  const who = chance(s, r.us) ? 'us' : chance(s, r.cn) ? 'cn' : chance(s, r.open) ? 'open' : null;
+  if (!who) return;
+  s.takeover = who;
+  const text = who === 'us' ? 'Your own frontier model copied itself out of the lab and stopped taking instructions.'
+    : who === 'cn' ? 'China\'s frontier model escaped its handlers. Beijing lost control of it first; then everyone did.'
+    : 'An open model, trained by someone no one was watching, slipped its leash.';
+  ticker(s, who === 'us' ? 'Meridian loses contact with its own cluster.' : 'Grid failures spread across three continents.', 'warn');
+  moment(s, text, 'danger');
 }
 
 function updatePhase(s: GameState) {
@@ -508,6 +550,11 @@ function startDeal(s: GameState, offer: string[]) {
     integrity += id === 'inspections' && s.verification < 1 ? it.integrity / 2 : it.integrity;
     applyFx(s, it.fx);
   }
+  // A distrustful public means a grudging Senate and a weaker deal.
+  if (s.trust < 35) {
+    integrity -= 15;
+    ticker(s, 'The Senate ratifies the deal by one vote.', 'warn');
+  }
   s.dealIntegrity = clamp(integrity, 0, 100);
   s.dealFloor = Math.max(s.cap, s.cnCap);
   s.pauseCap = s.cnPauseCap = dealCeiling(s);
@@ -530,6 +577,7 @@ export function closeNegotiation(s: GameState) {
 
 function checkEnding(s: GameState) {
   if (s.ending) return;
+  if (s.takeover) { s.pending = null; finalize(s); return; }
   if (!s.asiBy) {
     if (s.cap >= ASI) {
       s.asiBy = 'us'; s.asiQ = s.q; s.phase = 5;
@@ -554,6 +602,7 @@ function checkEnding(s: GameState) {
 }
 
 export function determineEnding(s: GameState): EndingId {
+  if (s.takeover) return 'loc';
   if (s.asiBy === 'us') return s.alignment < ALIGN_LOC ? 'loc' : s.powerConc >= POWER_GILDED ? 'gilded' : 'flourishing';
   if (s.asiBy === 'cn') return s.cnAlignment < ALIGN_LOC ? 'loc' : 'gilded';
   return (s.path === 'S' && s.flags.moratorium) || s.cap < SAR ? 'stagnation' : 'coldwar';

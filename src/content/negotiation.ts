@@ -23,7 +23,7 @@ export const NEGOTIATION_ITEMS: NegotiationItem[] = [
     refusal: 'You already own the fabs. A cap freezes your advantage.', value: [0.2, -0.6, -1.5] },
   { id: 'joint', name: 'Joint alignment research', kind: 'term', integrity: 8,
     desc: 'Shared safety lab in Geneva. Both sides get better at alignment.',
-    fx: { add: { safety: 1, cnAlignment: 15 } },
+    fx: { add: { safety: 1, cnAlignment: 15 }, flags: { jointLab: true } },
     refusal: 'Your "safety research" is a pretext to study our models.', value: [1.5, 0.8, 0.3] },
   { id: 'open', name: 'Publish all frontier research', kind: 'term', integrity: 6,
     desc: 'All AI research is public. No secret breakthroughs, for anyone.',
