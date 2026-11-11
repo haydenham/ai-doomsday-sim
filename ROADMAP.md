@@ -100,6 +100,7 @@ Running list. ✅ = fixed, 📋 = folded into a step below, ❓ = awaiting the o
 | 12 | Is nudging safety actually doing anything? | Yes, over a run (Plan C: 37% → 71% wins when nudging every quarter), but it was nearly invisible early: nudging 2027–2029 added only +0.4 research. Fixes: (1) the safety research row shows its rate, e.g. "low ▲0.5/yr", from the same `safetyRate` the sim uses; (2) safety research before Automated Coder now runs at 60–100% of full speed (was 30–100%), since human researchers carry it then. Balance roughly unchanged; rails ok | ✅ |
 | 13 | (2026-11-11) Too easy: won racing China once and Plan A once, first try each | Measured: safe Plan A wins 100%. Humans beat the race bots (39%) because the readout tells them when to ease off. Plan: Step 5 (Pressure) | 📋 Step 5 |
 | 14 | (2026-11-11) "Sometimes I'm just moving numbers around that aren't doing anything" | Confirmed. On Plan A, **every** split wins 100% (all capabilities, all safety, balanced, labs default). Most stats only matter at one threshold or only move the score. Plan: Step 4 (Teeth) | 📋 Step 4 |
+| 15 | (2026-11-11) Losing shouldn't only come from China getting there first; the AI itself should be able to take over | Today Loss of Control is only checked at the moment of ASI. Planned: a quarterly takeover hazard from Superhuman AI Researcher onward, for US, Chinese and open models. Containment (security share) lowers it, and warning shots are its visible precursors. Owner also approved: Teeth before 3b, elections can end a deal or a moratorium, China's posture changes mid-run | 📋 Step 4.3b, Step 5.4 |
 
 ### Design principles from playtesting
 - **Speed is never rewarded; falling behind is punished.** Going too slow fails for reasons from the scenario: China passes you, a deal stops appealing to them, China reaches ASI with weaker alignment, and AI-automated alignment research stalls without capable models.
@@ -264,7 +265,7 @@ On Plan A the dial changes nothing. Under the ceiling, capability grows slowly, 
 | Tension | Taiwan crisis at 90, negotiation odds | Nothing happens between 20 and 90 |
 | Jobs | Trust | Second-order flavor |
 | Deal integrity | Collapse at 0 | "Recommit" always restores +30 for 2% GDP, so a deal never really dies |
-| Alignment | One check at the moment of ASI | Banked early, it can't be lost |
+| Alignment | One check at the moment of ASI | Banked early, it can't be lost, and a misaligned AI can never act before ASI |
 
 Also: 23 of 34 decisions on Plan A make no measurable difference (playtest #6). Only the safety row shows its live effect.
 
@@ -273,6 +274,12 @@ Also: 23 of 34 decisions on Plan A make no measurable difference (playtest #6). 
 1. **Money buys chips.** US compute growth scales with the economy (inference share × trust), with a one-year lag. Capabilities = faster algorithms now; inference = more chips next year. That is a real tradeoff in a race, and it's AI 2040's story: revenue funds the datacenters.
 2. **Under a deal, inspectors see your split.** A capabilities share above ~40% lowers deal integrity (Beijing reads it as preparing a breakout), so dumping share into capabilities has a cost. The labs' default of 70% erodes the deal unless you steer.
 3. **Alignment has to be held, not banked.** Remove the free alignment gain while growth is slow. Alignment decays slowly toward "the model's own goals" as capability rises, unless safety share holds it. Plan A's 2040 unpause then becomes a real test of fifteen years of safety work.
+3b. **The AI itself can take over, before superintelligence** (playtest #15). Today Loss of Control is only checked at the moment of ASI. Add a quarterly **takeover hazard** from Superhuman AI Researcher (8.8) onward:
+   - It rises with misalignment and capability, and falls with **containment**. Containment is a second job for the security share (AI control: monitoring, sandboxing, no internet access).
+   - It applies to **every** frontier model: the US model (alignment), **China's model** (cnAlignment), and open or rogue models (openness, rogue labs). A misaligned Chinese AI escaping is an AI takeover, not a Chinese one.
+   - It can end the run at any time with Loss of Control. The Reveal names the cause: "your model", "China's model", or "an open model".
+   - It's visible only through its precursors (Step 5 warning shots) and through the readout, which can lie.
+   - So a Plan A run with a misaligned model at the ceiling can still be lost in 2036, and a race that "wins" against China can be lost to its own AI first.
 4. **Security is continuous.** Replace the security < 3 threshold with a quarterly leak chance proportional to lead × (10 − security). The row shows it: "theft risk 12%/yr".
 5. **Trust → elections with teeth.** Losing an election brings in an administration with the opposite doctrine: it pulls the split back to the labs' default, repeals a law (the 25% cap, chip tracking), and can leave a deal or lift a moratorium. Trust also gates the biggest moves (nationalizing, a moratorium, ratifying a deal).
 6. **Tension is a ladder.** 50: China retaliates (cyberattacks, theft attempts). 70: China's posture hardens one step. 90: Taiwan.
@@ -306,7 +313,7 @@ Also: 23 of 34 decisions on Plan A make no measurable difference (playtest #6). 
    - Abroad: compute outside the deal (Gulf, rogue labs) grows.
    - China's compliance depends on your verification and its posture.
 3. **The readout lies more as models get smarter.** Deceptive bias grows with capability faster than general safety work shrinks it. Only interpretability (a decision line, or a fifth use of compute) keeps the readout honest late. The readout shows a range rather than one number, so the player decides under real uncertainty.
-4. **Warning shots.** Ambiguous AI incidents mid-run: an agent copies itself off a lab cluster; a model sandbagging its evals; an AI-enabled cyberattack. Each one's severity depends on the dial (safety, security), some are false alarms, and each one forces a costly response (pause and lose lead, or press on).
+4. **Warning shots: the visible steps toward a takeover (Step 4, item 3b).** An escalating ladder of ambiguous incidents: a model sandbagging its evals, then an agent copying itself off a lab cluster, then an AI-enabled cyberattack nobody claims. They come from the same hazard, so more of them means real danger. Some are false alarms, though, and each one forces a costly response (pause and lose lead, or press on). Incidents can come from China's or open models too, and you can't always tell whose.
 5. **Endings get stricter.** The alignment needed at superintelligence depends on how fast the final climb was: a fast takeoff needs more margin than a slow one. Flourishing also needs trust above a floor, because a public that rejects the transition doesn't get flourishing.
 6. **Score per year** (carried from the old Step 5): ending quality × prosperity per year, so Plan A doesn't win on length alone.
 7. **(Optional) Difficulty choice.** The hidden difficulty seed already exists. Show Normal / Hard on the launch screen.
