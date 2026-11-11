@@ -98,6 +98,8 @@ Running list. ✅ = fixed, 📋 = folded into a step below, ❓ = awaiting the o
 | 10 | **Bug:** after talks failed, no new negotiation came up for several quarters | The "Talks" decision was Plan A-only, and failing talks moves you to Plan D. It was also one random card among ~20. It's now an event, "Beijing signals it is ready to talk again": on any path but a moratorium, 4+ quarters after talks end, 50% per quarter. Signing a deal from any path puts you on Plan A's rails (the first piece of emergent paths). Verified: Beijing returns in 154/157 runs with failed talks (the other 3 ended first), median 5 quarters | ✅ |
 | 11 | Rename "deployment" to "inference"; add hover explanations to stat titles | Renamed (the internal key stays `deploy`). `Row`/`Stat` take a `hint` prop: a dotted-underlined label shows a one-line explanation on hover. All 4 allocation rows and all 23 other stat rows have one. New stats should always get a hint | ✅ |
 | 12 | Is nudging safety actually doing anything? | Yes, over a run (Plan C: 37% → 71% wins when nudging every quarter), but it was nearly invisible early: nudging 2027–2029 added only +0.4 research. Fixes: (1) the safety research row shows its rate, e.g. "low ▲0.5/yr", from the same `safetyRate` the sim uses; (2) safety research before Automated Coder now runs at 60–100% of full speed (was 30–100%), since human researchers carry it then. Balance roughly unchanged; rails ok | ✅ |
+| 13 | (2026-11-11) Too easy: won racing China once and Plan A once, first try each | Measured: safe Plan A wins 100%. Humans beat the race bots (39%) because the readout tells them when to ease off. Plan: Step 5 (Pressure) | 📋 Step 5 |
+| 14 | (2026-11-11) "Sometimes I'm just moving numbers around that aren't doing anything" | Confirmed. On Plan A, **every** split wins 100% (all capabilities, all safety, balanced, labs default). Most stats only matter at one threshold or only move the score. Plan: Step 4 (Teeth) | 📋 Step 4 |
 
 ### Design principles from playtesting
 - **Speed is never rewarded; falling behind is punished.** Going too slow fails for reasons from the scenario: China passes you, a deal stops appealing to them, China reaches ASI with weaker alignment, and AI-automated alignment research stalls without capable models.
@@ -236,25 +238,100 @@ Remove the 2029 plan menu. The scenario you end up in should emerge from what yo
 - Can you drift between paths, e.g. from a collapsed deal into a race? (Probably yes. That's the interesting part.)
 - What triggers the offers?
 
-## Step 4. Interactive map
+## Step 4. Teeth: every number does something (playtest #14)
+
+**The rule:** every number on screen must (a) feed something that can change the ending, and (b) show what it is doing right now. A stat that can't pass both gets cut.
+
+### Diagnosis (150 seeds, 2026-11-11)
+
+| Plan A split | Win rate | Final alignment |
+|---|---|---|
+| All capabilities | 100% | 94 |
+| All safety | 100% | 99 |
+| Balanced | 100% | 98 |
+| Labs default | 100% | 95 |
+
+On Plan A the dial changes nothing. Under the ceiling, capability grows slowly, alignment climbs to ~95 by 2040, and the unpause takeoff can't pull it under 40.
+
+**Per stat: what it actually touches today**
+
+| Stat | Only effect | Problem |
+|---|---|---|
+| Capabilities share | Algorithm speed | Under a deal, anything above the ceiling is wasted, so the share is free |
+| Inference share | GDP, trust, jobs | GDP only moves the score. Nothing in the race needs money |
+| Security share | Theft check, which runs only while security < 3 | Above 3 it does nothing |
+| Trust | Elections (losing costs −1 safety), Plan S gate, protests | Losing an election barely hurts |
+| Tension | Taiwan crisis at 90, negotiation odds | Nothing happens between 20 and 90 |
+| Jobs | Trust | Second-order flavor |
+| Deal integrity | Collapse at 0 | "Recommit" always restores +30 for 2% GDP, so a deal never really dies |
+| Alignment | One check at the moment of ASI | Banked early, it can't be lost |
+
+Also: 23 of 34 decisions on Plan A make no measurable difference (playtest #6). Only the safety row shows its live effect.
+
+### Changes
+
+1. **Money buys chips.** US compute growth scales with the economy (inference share × trust), with a one-year lag. Capabilities = faster algorithms now; inference = more chips next year. That is a real tradeoff in a race, and it's AI 2040's story: revenue funds the datacenters.
+2. **Under a deal, inspectors see your split.** A capabilities share above ~40% lowers deal integrity (Beijing reads it as preparing a breakout), so dumping share into capabilities has a cost. The labs' default of 70% erodes the deal unless you steer.
+3. **Alignment has to be held, not banked.** Remove the free alignment gain while growth is slow. Alignment decays slowly toward "the model's own goals" as capability rises, unless safety share holds it. Plan A's 2040 unpause then becomes a real test of fifteen years of safety work.
+4. **Security is continuous.** Replace the security < 3 threshold with a quarterly leak chance proportional to lead × (10 − security). The row shows it: "theft risk 12%/yr".
+5. **Trust → elections with teeth.** Losing an election brings in an administration with the opposite doctrine: it pulls the split back to the labs' default, repeals a law (the 25% cap, chip tracking), and can leave a deal or lift a moratorium. Trust also gates the biggest moves (nationalizing, a moratorium, ratifying a deal).
+6. **Tension is a ladder.** 50: China retaliates (cyberattacks, theft attempts). 70: China's posture hardens one step. 90: Taiwan.
+7. **Recommit gets expensive.** Each recommit costs more and restores less; the third is not offered.
+8. **Every row shows its live effect,** in a few words, from the same function the sim uses:
+   ```
+   capabilities  ▮▮▮▮▮▮▮▯▯▯  70%   lead +2 mo/yr
+   safety        ▮▯▯▯▯▯▯▯▯▯  10%   ▲0.5/yr
+   inference     ▮▮▯▯▯▯▯▯▯▯  15%   chips +18%/yr
+   security      ▮▯▯▯▯▯▯▯▯▯   5%   theft risk 12%/yr
+   ```
+9. **Decision audit tool** (`npm run audit`): for each decision, flip the answer across 150 seeds per path and measure the win-rate change. Cut or merge any decision that moves nothing on any path.
+
+### Success criteria (sim)
+- On every path, the best and worst fixed splits differ by **≥ 30 points** of win rate.
+- The labs' default split is never the best split on any path.
+- Every remaining decision moves win rate by **≥ 3 points** on at least one path.
+- Rails still pass.
+
+---
+
+## Step 5. Pressure: harder, richer scenarios (playtest #13)
+
+**Why it's easy today:** China's intent is a coin flip at the start and never changes. Alignment risk shows up only at the very end. The readout is honest enough to steer by. The deal is safe once signed.
+
+### Changes (each grounded in AI 2040)
+
+1. **China adapts.** Its posture (cooperative / opportunistic / racing) moves with what you do: the lead, tension, sanctions, theft, how you treat a deal. Humiliate a cooperative China and it starts racing. A racing China that falls far behind may come to the table. The opponent becomes a system, not a seed.
+2. **Keeping a deal is a fight.**
+   - At home: labs and Congress lobby to loosen the ceiling while the economy grows slowly under it.
+   - Abroad: compute outside the deal (Gulf, rogue labs) grows.
+   - China's compliance depends on your verification and its posture.
+3. **The readout lies more as models get smarter.** Deceptive bias grows with capability faster than general safety work shrinks it. Only interpretability (a decision line, or a fifth use of compute) keeps the readout honest late. The readout shows a range rather than one number, so the player decides under real uncertainty.
+4. **Warning shots.** Ambiguous AI incidents mid-run: an agent copies itself off a lab cluster; a model sandbagging its evals; an AI-enabled cyberattack. Each one's severity depends on the dial (safety, security), some are false alarms, and each one forces a costly response (pause and lose lead, or press on).
+5. **Endings get stricter.** The alignment needed at superintelligence depends on how fast the final climb was: a fast takeoff needs more margin than a slow one. Flourishing also needs trust above a floor, because a public that rejects the transition doesn't get flourishing.
+6. **Score per year** (carried from the old Step 5): ending quality × prosperity per year, so Plan A doesn't win on length alone.
+7. **(Optional) Difficulty choice.** The hidden difficulty seed already exists. Show Normal / Hard on the launch screen.
+
+### Success criteria (sim)
+
+| Bot | Target win rate | Today |
+|---|---|---|
+| Safe Plan A | 45–65% | 100% |
+| Skilled race (reactive) | 25–40% | 39–47% |
+| Safe Burn the Lead | 40–60% | 14% |
+| Random | < 10% | 9% |
+| Any bot | ≤ 70% | 100% |
+
+Plus a replay test: the owner plays Plan A and a race again and loses at least once.
+
+---
+
+## Step 6. Interactive map
 
 Builds on Step 3 (and option D if chosen):
 - Hover or click a country to see its stance, compute, and deal status.
 - Place datacenters, inspectors or spies on countries.
 - Visible spread: deal membership, halts, and defections propagate country to country.
 - Covert sites appear only when intel finds them.
-
----
-
-## Step 5. Rebalance choice impact vs. the rails
-
-Once the control exists, tune so that:
-- **Score** = how good the ending is × prosperity *per year*, not the economy summed over time. Plan A must not win just by lasting longest (today: Plan A safe scores 1539 vs 135–382 elsewhere).
-- **Over-caution costs something real** (see the playtest principles): falling behind China has thesis-grounded consequences.
-- **Careful racing** has a skilled way to win (today 8–29%).
-- Default play follows the AI 2040 narrative for the chosen path.
-- Skilled or reckless steering moves milestones within the band and changes the ending.
-- No single allocation dominates across seeds. The runner gains allocation-strategy bots.
 
 ---
 
