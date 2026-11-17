@@ -354,6 +354,12 @@ Also: 23 of 34 decisions on Plan A make no measurable difference (playtest #6). 
 
 ---
 
+## Step 4.5. Scenario drawing board (in progress)
+
+Per-plan scenarios, failure modes, targets and cut list are in `SCENARIOS.md` (draft, 2026-11-16). AI 2040's "Comparing Possible Plans" supplement turns out to define B, C, D and S. Open owner questions are listed at the bottom of that file. Step 5 waits on the answers.
+
+---
+
 ## Step 5. Pressure: harder, richer scenarios (playtest #13)
 
 **Why it's easy today:** China's intent is a coin flip at the start and never changes. Alignment risk shows up only at the very end. The readout is honest enough to steer by. The deal is safe once signed.

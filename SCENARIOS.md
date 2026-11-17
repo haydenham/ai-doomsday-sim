@@ -1,0 +1,190 @@
+# Scenarios: the drawing board
+
+Draft, 2026-11-16. The owner asked for the full scenario and steps for each plan before Step 5 (Pressure). This is that pass: what each plan *is*, how it plays act by act, how you lose, and what content stays, goes or gets added. Nothing here is built yet. Open questions are at the bottom.
+
+## Source update: AI 2040 does describe B, C, D and S
+
+`/supplements/comparing-possible-plans` gives each plan a definition, a takeoff length and the authors' odds. We had treated B–S as stubs.
+
+| Plan | AI 2040 definition | Takeoff (AC→ASI) | Safety compute | p(aligned) | p(great future) |
+|---|---|---|---|---|---|
+| A | Verified US–China slowdown deal, full research transparency | ~6 yr | 100B H100e-yr | 72% | **42%** |
+| B | **Sabotage China** (cyber, or kinetic) to create a lead, **then burn that lead on safety** | 2–3 yr | 100–500M | 50% | **25%** |
+| C+ | Domestic regulation plus non-sabotage pressure on China (export controls, talent) | ~1.5 yr | 20M | 45% | **25%** |
+| C | The leading lab spends some of its lead on safety; no regulation | ~1.1 yr | 4M | 40% | **20%** |
+| D | Race through the intelligence explosion; ≥1% on safety | ~1.0 yr | 0.5M | 25% | **10%** |
+| S | Indefinite halt of frontier progress, lifted on a condition (alignment progress, lie detectors, uploads, intelligence enhancement) | n/a | n/a | not scored | not scored |
+
+Other points from the page:
+- Every plan's window opens about a year before Automated Coder (early 2029). **C and D do nothing until takeoff starts.**
+- B's "wartime vibe" degrades epistemics, and it usually brings (pseudo-)nationalization, so transparency falls and power concentrates.
+- S counts as S only if it starts ~1.5 years before AC.
+
+**Two mismatches with the game:**
+1. **Our Plan B is not their Plan B.** Ours is "fight and centralize" with no safety step, so the fight bot loses 99%. Theirs is fight *in order to* buy time, then spend it.
+2. **Our odds run in the wrong order.** Expert play wins D 67%, C 78%, A 98%. The authors' order is A ≫ B ≈ C+ > C > D. With D at 67%, racing looks nearly as good as a deal.
+
+## Shared spine (every plan)
+
+| Act | Years | What happens | The player |
+|---|---|---|---|
+| **I. Agents** | 2027 – early 2029 | Agents in the millions, the AI election, the buildout. No plan yet. | Learns the dial; builds what the plan will need later: verification, intel, security, trust, the lead. |
+| **The Fork** | ~Q1 2029 | Choose a plan. Each one shows what it needs (lead, trust, verification). | The one big choice. What you built in Act I decides which plans are open and how strong they start. |
+| **II. Takeoff** | 2029 – AC + 1 yr | The plan's main engine runs. Each plan has its own **signature crisis**. | Steers the dial, answers plan decisions. |
+| **III. Endgame** | to ASI / 2041 | The plan's **final test**. Then superintelligence, takeover or a stall. | One or two decisions that matter most (the keys, the lift, the unpause). |
+
+**Act I's real job:** right now Act I decisions mostly move prosperity. Each should feed a Fork precondition, so Act I is how you *earn* your plan.
+
+---
+
+## Plan A: Verified Slowdown
+
+**Fantasy:** The diplomat. You trade speed for a world where no one races.
+**Core tension:** The deal is only as strong as your ability to see China's chips, and everyone at home wants the ceiling raised.
+
+| Beat | When | What happens |
+|---|---|---|
+| Geneva | 2029 | Negotiate terms (built). Red lines, up to 4 offers. Verification from Act I sets the starting integrity. |
+| Training pause | Mar–Sep 2029 | A visible beat. Labs grumble and trust dips. |
+| Scaling together | 2030–35 | The ceiling rises: AC ~mid-2030, TED-AI ~2035. Inspectors, joint lab, treaty reviews. |
+| **Signature crisis: the secret datacenter** | anytime under the deal | China (or a Gulf or rogue site) trains off the books. Whether you find it depends on intel and verification built *beforehand*. Every response costs something. (Step 5.3) |
+| The long plateau | 2035–40 | Near-flat ceiling. Pressure to loosen it, slow economy, elections. Alignment must be held, not banked. |
+| **Final test: the unpause** | 2040 | Scaling resumes. Fifteen years of safety work meets a fast final climb. |
+
+**How you lose (target ~half of losses each):**
+- **Cheating you didn't catch:** a misaligned covert model takes over or reaches ASI first.
+- **The deal dies at home:** an election, the labs or the economy end it, and you race from behind.
+- **The unpause:** alignment wasn't held through the plateau.
+
+**Today:** expert 98%, steering 85–97%, never touching the split 66%. Too easy. The secret datacenter is found almost every time and never matters.
+
+**Content:**
+- Keep: Geneva, Inspectors, Treaty review, Destruction pledge (rewire it to the secret datacenter: it raises the cost of cheating *and* the risk of a strike).
+- Rewire: Joint lab and Open research (change nothing today) feed China's alignment, which matters once the covert model is a real rival.
+- New: the secret-datacenter chain (Step 5.3), "the labs lobby" (domestic pressure), the Gulf as an outside-the-deal compute source.
+
+---
+
+## Plan B: Sabotage, then Spend (redefined to match AI 2040)
+
+**Fantasy:** The hawk with a conscience. You break China's momentum to buy the time a deal never would.
+**Core tension:** Every month you buy costs tension, trust and concentrated power. Buy time and then fail to spend it on safety, and you've just started a war for nothing.
+
+| Beat | When | What happens |
+|---|---|---|
+| Doctrine | 2029 | Choose **cyber** (smaller lead, less escalation) or **kinetic** (bigger lead, war risk). This is AI 2040's B-cyber / B-kinetic split. |
+| The campaign | 2029–31 | Cyberattacks, sanctions, supply-chain hits. China's compute falls and its posture hardens. The lead grows. |
+| **Signature crisis: retaliation** | when tension is high | Cyber retaliation, a Taiwan crisis, theft attempts against your labs. War is a real ending risk under the kinetic doctrine. |
+| Wartime footing | 2030+ | Emergency powers and nationalization pull. Power concentrates, readout honesty and trust fall (the "wartime vibe"). |
+| **Final test: spend the lead** | AC → ASI, 2–3 yr | Lean on safety while the lead lasts. Then the keys: who controls ASI after a war footing? |
+
+**How you lose:**
+- **A wasted lead:** you sabotage but keep racing, and get Loss of Control.
+- **Escalation:** Taiwan or war (a new hard ending, or a trust and compute collapse).
+- **The Gilded Cage:** the war footing never ends, and power stays concentrated.
+
+**Today:** the fight bot loses 99% (it never spends the lead). No Plan B bot exists in the steering table, and the audit doesn't cover B.
+
+**Content:**
+- Keep: Cyberattack, Sanctions, Taiwan, Emergency powers, DPA.
+- New: doctrine choice; a "stand down" decision (end the campaign to lower tension and restore trust); a kinetic strike with war risk.
+- Engine: B gets C's halved lab pull once the campaign has built a lead, since a wartime government controls the labs more.
+
+---
+
+## Plan C: Burn the Lead
+
+**Fantasy:** The careful leader. You win the race slowly enough to see where you're going.
+**Core tension:** Every month spent on safety is a month China closes. Spend too little and the AI isn't safe; too much and China gets there first.
+
+AI 2040 splits this into **C** (the labs do it, no laws) and **C+** (domestic regulation). Proposal: one Plan C, and Act II decisions decide whether you become C+ (pass the cap and permits, odds improve, trust and labs push back).
+
+| Beat | When | What happens |
+|---|---|---|
+| The margin | 2029 | Needs a 3+ month lead. Lab pull halved. |
+| Regulate or not | 2029–30 | AI research cap, permits, transparency, secret models. These are already the biggest swings in the audit, and they decide C vs C+. |
+| **Signature crisis: China closes** | when the lead is under ~3 months | Spend the rest, or stop burning and race. A theft resets the margin overnight. |
+| **Final test: the last year** | AC → ASI, ~1–1.5 yr | Short takeoff. How much margin is left decides it. |
+
+**How you lose:**
+- **China first** (over-caution).
+- **Loss of Control** (under-caution).
+- **The Gilded Cage:** today the burn-lead bot ends Gilded 94% from power drift. Is that intended? C has no centralizing content, so probably not (see the questions below).
+
+**Today:** expert 78%, reactive 52%, never touching the split 19%. Steering targets hit, but its expert rate is above where AI 2040 would put it relative to A.
+
+**Content:**
+- Keep: Interpretability, Share safety research, the cap and permits (now C-defining).
+- New: "the labs want the lead back" (lab pull spikes when China closes); a C+ marker shown in the Reveal.
+
+---
+
+## Plan D: Race to Superintelligence
+
+**Fantasy:** All in. Let the AIs build the AIs.
+**Core tension:** You can see less and less of what the models are doing. Can you hold on long enough to ease off at the right moment?
+
+| Beat | When | What happens |
+|---|---|---|
+| Race doctrine | 2029 | Lab preference 85% capabilities, +30% R&D, power drift ×1.6. |
+| AIs run the labs | 2029–30 | Who runs the lab, Safety reviews, DPA. The readout gets worse fast. |
+| **Signature crisis: warning shots** | from SAR | Sandbagging, self-exfiltration, an unclaimed cyberattack. Pause and lose the lead, or press on. (Step 5.5) |
+| **Final test: the keys** | ~1 yr after AC | ASI arrives fast. Whose hands, and was it aligned? |
+
+**How you lose:** most of the time, by AI 2040's odds. Loss of Control dominates; China first if you ease off too early; the Gilded Cage via emergency powers.
+
+**Today:** expert 67%, reactive 48%. Much better than AI 2040's 10%. D should be playable but clearly the worst plan.
+
+**Content:**
+- Keep: Who runs the lab, Safety reviews, DPA, Taiwan, Emergency powers.
+- New: warning shots; "full automation" (hand over the remaining human oversight for speed).
+
+---
+
+## Plan S: Shut It All Down
+
+**Fantasy:** Pull the plug on the world. Then hold the line, and choose when, or whether, to let go.
+**Core tension:** The longer you hold, the safer the AI and the more everyone else wants to cheat. Lifting needs a *reason*, not a date.
+
+| Beat | When | What happens |
+|---|---|---|
+| The halt | 2029 | Needs trust 40+. China joins, joins and cheats, or refuses (built). |
+| Enforcement | 2029–33 | Satellites and inspectors, rogue datacenters, strikes. Fatigue and the economy pull trust down. |
+| **Signature crisis: rogue compute** | ongoing | Cheaters, rogue labs, Gulf sites. Each one is a strike-or-tolerate decision with war risk. |
+| The condition | 2033+ | AI 2040 lists lift conditions: alignment progress, lie detectors, uploads, intelligence enhancement. Proposal: pick one at the halt; it fills slowly (driven by safety share on the frozen models); lifting before it's met is a gamble. |
+| **Final test: the lift** | your choice | Lift slowly, and the overhang is released. Or never lift (Stagnation: safe, but is it a win?). |
+
+**How you lose:** a cheater gets there (China or rogue); fatigue and an election lift it for you; you lift too early; or Stagnation.
+
+**Today:** never lifting ends in Stagnation 79%; lifting late wins 33%. No S bot in the steering table, and the audit doesn't cover S.
+
+---
+
+## Proposed targets (for owner approval)
+
+Keep the owner's steering spread (never touch → reasonable → expert), but **order the plans by AI 2040's odds**, so choosing a plan matters as much as playing it well:
+
+| Plan | Never touch | Reasonable | Expert | AI 2040 p(great) |
+|---|---|---|---|---|
+| A | 15–25% | 55–65% | ~80% | 42% |
+| B | 5–15% | 40–50% | ~70% | 25% |
+| C | 5–15% | 40–50% | ~70% | 20–25% |
+| S | 5–15% | 40–50% | ~65% | n/a |
+| D | ~0% | 20–30% | ~45% | 10% |
+
+## Cut list (from the Step 4 audit: no effect on any path)
+
+Proposed: **cut** old chips, AI medicine and AI in government; **merge** chip tracking into export controls; **rewire** the rest to a Fork precondition or a Step 5 lever:
+- spy budget → finding cheating;
+- joint lab, share research, open research → China's alignment, once its model is a real rival;
+- AI dividend → trust, which now decides elections;
+- the destruction pledge → the secret-datacenter chain.
+
+## Open questions for the owner
+
+1. **Plan B:** redefine it to AI 2040's "sabotage, then spend the lead on safety", with a cyber/kinetic doctrine choice?
+2. **Plan order:** should expert play still differ across plans, with D clearly worst and A best, per the targets above?
+3. **C vs C+:** one Plan C where regulating it makes it C+ (recommended), or two plans?
+4. **Plan S lift condition:** a lift condition chosen at the halt, filled by safety work, replacing the fixed Q36 timing?
+5. **Gilded Cage on Plan C (94% for the burn-lead bot):** a bug to fix, or intended?
+6. **Emergent paths (Step 3b):** keep the Fork menu for now and revisit after Step 5? (Recommended: yes; these scenarios work either way.)

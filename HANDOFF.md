@@ -12,7 +12,7 @@ Playable local prototype: a real-time, decision-driven strategy game about US AI
 - **v2** (current) was received very well ("wayyyy better"). Terminal UI, one decision at a time, slow reveal.
 - **Steps 0–3 of the roadmap are done:** the timer bar was removed (0), timelines follow AI 2040 (1), metrics share one bar-plus-word style (2), and **compute allocation** is the primary control (3, `sim/alloc.ts`).
 - **Step 4 (Teeth) done 2026-11-11:** every compute row has a real, visible effect; there's an AI takeover risk before superintelligence; theft, elections, tension and recommits have teeth. Results are in ROADMAP.
-- **Next:** the owner wants to lay out the full scenario for each plan (A, B, C, D, S) and go back to the drawing board before Step 5 (Pressure).
+- **In progress (2026-11-16):** `SCENARIOS.md` lays out every plan (A, B, C, D, S) from AI 2040's plan-comparison supplement. It's waiting on owner answers before Step 5 (Pressure).
 
 ## Run
 
