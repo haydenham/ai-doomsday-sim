@@ -2,25 +2,56 @@
 
 Read this first in a new session, then `ROADMAP.md` (the plan) and `game_design.md` (the owner's original design doc; source of intent, though parts are now superseded, see below).
 
-Last updated: 2026-11-16.
+Last updated: 2026-11-17.
 
 ## Status
 
-Playable local prototype: a real-time, decision-driven strategy game about US AI policy, 2027 to ~2041, based on ai-2040.com (AI Futures Project).
+Playable local prototype: a real-time, decision-driven strategy game about US AI policy, 2027 to ~2041, based on ai-2040.com (AI Futures Project). Terminal UI, one paused decision at a time, slow reveal. The owner likes it ("wayyyy better" than v1, which was rejected).
 
-- **v1** (dashboard plus a hand of policy cards with political capital) was **rejected** as cluttered, wordy and not gamified.
-- **v2** (current) was received very well ("wayyyy better"). Terminal UI, one decision at a time, slow reveal.
-- **Steps 0–3 of the roadmap are done:** the timer bar was removed (0), timelines follow AI 2040 (1), metrics share one bar-plus-word style (2), and **compute allocation** is the primary control (3, `sim/alloc.ts`).
-- **Step 4 (Teeth) done 2026-11-11:** every compute row has a real, visible effect; there's an AI takeover risk before superintelligence; theft, elections, tension and recommits have teeth. Results are in ROADMAP.
-- **In progress (2026-11-16):** `SCENARIOS.md` lays out every plan (A, B, C, D, S) from AI 2040's plan-comparison supplement, and the owner has answered most of its questions. Done so far:
-  - Plan B rebuilt as "Sabotage, then Spend" (doctrine, campaign, stand down).
-  - China-first is its own ending, Second Place.
-  - Weight theft fixed.
-  - Cut list started.
+**Done:**
+- **Steps 0–4:** AI 2040 timelines, standardized metrics, compute allocation as the main control, and "Teeth" (every compute row matters, an AI takeover risk before superintelligence).
+- **`SCENARIOS.md`:** every plan (A/B/C/D/S) drawn from AI 2040's plan comparison, with the owner's answers recorded.
+- **Plan B rebuilt** as "Sabotage, then Spend": a cyber or kinetic doctrine, a campaign, and a stand-down decision.
+- **New ending, Second Place:** China gets there first with an aligned AI.
+- **Weight theft fixed:** it now really costs about 9 months of lead.
+- **Cut list started.**
+- **Step 5.3, China cheats for real:** the hidden datacenter is a real, less-aligned rival model; detection depends on spies, chip tracking and inspectors; four costly responses; breakout if ignored.
+- **Playtest fixes (2026-11-17):** the Deal panel shows the **ceiling**; the Treaty review popup explains it; "found by AI, not people" has a hint.
+- **Loss of Control tells the run's own takeover story** (`content/takeover.ts`): whose model, the warnings you had, how it got out, what it took.
 
-  - Step 5.3, China cheats for real (2026-11-17).
+**Owner playtest (2026-11-17):** lost Plan A to an AI takeover after the evals showed it failing alignment tests. "This is good." The owner accepts Plan C below target.
 
-  Plan C below target is accepted by the owner. Next: the owner's playthroughs, then the rest of Step 5 (adaptive China, the readout lies more, warning shots, stricter endings, the Plan S lift condition, the C+ marker).
+**Latest sim (Flourishing %, 300 seeds):**
+
+| Plan | Never touch the split | Reactive | Expert | Target (reactive / expert) |
+|---|---|---|---|---|
+| A | 56 | 88 | 85 | 55–65 / ~80 |
+| B | 0 | 53 | 69 | 40–50 / ~70 |
+| C | 10 | 45 | 49 | accepted below target |
+| D | 0 | 21 | 44 | 20–30 / ~45 |
+| S | no bot yet | | | ~65 expert |
+
+**Audit:** 26 of 57 decisions still change the result by less than 3 points.
+
+## Next session: one big coding session (owner-approved scope)
+
+Work in this order. After each item, run `npm run typecheck && npm run build` and `npm run sim`, then commit. Ask the owner before any **new** design choice that affects gameplay; the items below are already approved.
+
+1. **Ending stories for every ending** (owner: "I like that for the other endings as well"). Extend `content/takeover.ts` into `content/endingStory.ts`, assembled from the run's own state, and use it in `Reveal.tsx` for every ending, not just Loss of Control. Use the same shape: who and when, what led here (decisions and moments), how it happened, what the world looks like now.
+   - **Gilded Cage:** who holds power (nationalization, the agents in government, Plan B's war footing, the merger, power grabs) and how they got it.
+   - **Second Place:** how China got ahead (theft, the hidden datacenter, a collapsed deal, lost export controls) and what Beijing does with it.
+   - **Flourishing:** what went right: the deal, verification, the safety share, the AI dividend.
+   - **Cold War and Stagnation:** where things froze and why.
+   - The one-line epitaphs in `endings.ts` become the closing line.
+2. **5.1 China adapts.** China's posture (cooperative, opportunistic or racing) moves with what you do: the lead, tension, sanctions, theft, how you treat the deal. The cheating chance already reads the posture. This is the biggest lever for bringing Plan A down to target.
+3. **5.5 Warning shots.** A rising series of incidents from the takeover risk: sandbagged evals, a model copying itself off a cluster, an unclaimed cyberattack. Some are false alarms, and each forces a costly choice (pause and lose lead, or press on). They should feed the ending story's "warnings" lines.
+4. **5.4 The readout lies more as capability grows.** Show a range instead of one number; interpretability is what keeps it honest.
+5. **5.6 Stricter endings.** A fast final climb needs more alignment margin, and Flourishing needs a minimum level of trust.
+6. **Plan S lift condition** (approved in SCENARIOS.md): pick a condition at the halt; safety work fills it; lifting early is a gamble. Add an S bot to `tools/sim.ts` and S to the audit.
+7. **C+ marker:** regulating during Plan C marks the run as C+.
+8. Later: 5.2 (keeping a deal is a fight), 5.7 (score per year), the rewires for decisions that do nothing (joint lab, secondary sanctions, AI dividend, backchannel, interpretability, destruction pledge), then Step 6, the interactive map.
+
+**General rule from playtest #17:** a popup must never ask about a number the player can't see. Check new decisions against this.
 
 ## Run
 
@@ -66,6 +97,7 @@ content/       data only
   decisions.ts ~45 decisions; each option has chips + fx + lean (race/safety/hawk/dove/people/power)
   events.ts    scripted/conditional events (also paused choices), incl. asi_keys, cn_breakout, unpause
   panels.ts    section unlock conditions; ladders.ts compute + algorithm tiers; paths.ts Plans A/B/C/D/S
+  takeover.ts  Loss of Control story built from the run (to grow into endingStory.ts)
   negotiation.ts  Plan A Geneva table; ticker.ts flavor + hidden-state hints; endings.ts
 store/game.ts  real-time loop and emit. Emits when blocked, which is the fix for the popup-not-showing bug.
 ui/            App.tsx (layout, ending sequence), sections.tsx (status/compute/world/... blocks),
@@ -95,33 +127,15 @@ tools/sim.ts   bots choose options by lean; prints ending distribution per strat
   - Flourishing otherwise;
   - Stagnation or Cold War if there is no ASI.
 
-### Latest balance (150 seeds per bot, after Step 1)
+Takeoff follows the owner's call: no-deal paths reach superintelligence 1–2 years after Automated Coder, while Plan A is a slow climb under the ceiling.
 
-| Bot | Result | AC → ASI |
-|---|---|---|
-| Race | Loss of Control 100% | 2029.5 → 2031.25 |
-| Careful race | Flourishing 8% | 2029.75 → 2032.0 |
-| Fight China | Loss of Control 100% | 2029.75 → 2031.75 |
-| Plan A, safety-minded | Flourishing 100% | 2031.5 → 2041.0 (TED-AI 2036.25) |
-| Plan A, fast-minded | Loss of Control 99% | the deal collapses, then a race |
-| Burn the Lead, safety-minded | Flourishing 95% | 2031.75 → 2034.5 |
-| Shutdown, lifted late | Flourishing 49%, Gilded 31%, Loss of Control 20% | a refusing China often gets ASI first |
-| Random | Loss of Control 66% | |
+## Known issues (detail in ROADMAP.md)
 
-Takeoff was tuned to the owner's call: no-deal paths reach ASI 1–2 years after AC, while Plan A is a slow climb. To compensate, the alignment-loss rate coefficient dropped from 2.5 to 1.0 (provisional until Step 5).
-
-## Known issues / next steps (detail in ROADMAP.md)
-
-1. ~~Timelines~~ and ~~flavor gating~~: fixed in Step 1.
-2. **Balance after Step 1:**
-   - Racing is near-hopeless (careful race wins 8%).
-   - Plan A (safety-minded) wins 100%.
-   - With Shut It Down, a refusing China often reaches ASI before the late lift.
-   - All three are for Step 5.
-3. ~~Metrics aren't standardized~~: fixed in Step 2. New metric rows should use `Stat`, and levers should use `Lever` in `sections.tsx`.
-4. **No primary control yet** (Step 3) and **the map is not interactive** (Step 4).
-5. Safety-minded play on Plans A and C wins too reliably; Plan B has no winning style.
-6. No git repo and no unit tests; the headless runner is the safety net.
+- Plan A is still too easy for anyone who steers (reactive 88% against a 55–65% target). Step 5 addresses this.
+- Plan S has no bot and no audit coverage, so its win rate is unknown.
+- 26 of 57 decisions still make no measurable difference.
+- There are no unit tests. The headless sim and audit are the safety net.
+- The repo is on GitHub (origin: haydenham/ai-doomsday-sim). Ask before pushing.
 
 ## Research sources
 
