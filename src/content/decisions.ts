@@ -86,30 +86,19 @@ export const DECISIONS: DecisionDef[] = [
   },
   {
     id: 'chip_tracking', title: 'Chip tracking', phases: ALL,
-    text: 'Every advanced chip could report its location.',
+    text: 'Every advanced chip, new or resold, reports its location.',
     when: (s) => s.q >= 4,
     options: [
-      { label: 'Require it', lean: 'safety', chips: ['g:verification +1', 'b:trust −2', 'h:'],
-        fx: { add: { verification: 1, trust: -2 }, flags: { chipTracking: true } } },
+      { label: 'Require it', lean: 'safety', chips: ['g:verification +1', 'b:trust −2', 'b:prosperity −0.5%', 'h:'],
+        fx: { add: { verification: 1, trust: -2 }, mul: { gdp: 0.995 }, flags: { chipTracking: true } } },
       { label: 'Too invasive', lean: 'people', chips: ['g:trust +2', 'h:'],
         fx: { add: { trust: 2 } } },
     ],
   },
   {
-    id: 'agents_gov', title: 'AI in government', phases: ALL,
-    text: 'Automate paperwork across federal agencies.',
-    when: (s) => s.q >= 2,
-    options: [
-      { label: 'Automate', lean: 'race', chips: ['g:prosperity +1%', 'b:jobs +', 'b:trust −2'],
-        fx: { add: { deployment: 1, trust: -2 }, mul: { gdp: 1.01 } } },
-      { label: 'Protect jobs', lean: 'people', chips: ['g:trust +2', 'b:prosperity −0.5%'],
-        fx: { add: { trust: 2 }, mul: { gdp: 0.995 } } },
-    ],
-  },
-  {
     id: 'nuclear', title: 'Power for AI', phases: [1, 2, 3], weight: 3,
     text: 'The datacenters need more electricity than the grid has.',
-    when: (s) => s.computeTier === 2,
+    when: (s) => s.computeTier === 2 && s.q >= 4,
     max: 2,
     options: [
       { label: 'Restart nuclear', lean: 'race', chips: ['g:compute ×2.2', 'b:trust −3'],
@@ -121,7 +110,7 @@ export const DECISIONS: DecisionDef[] = [
   {
     id: 'nordic', title: 'Arctic compute pact', phases: [1, 2, 3], weight: 3, max: 2,
     text: 'Norway and Finland offer cold, clean sites.',
-    when: (s) => s.computeTier === 3,
+    when: (s) => s.computeTier === 3 && s.q >= 6,
     options: [
       { label: 'Sign', lean: 'race', chips: ['g:compute ×1.8', 'b:tension +5'],
         fx: { add: { tension: 5 }, run: (s) => { unlockComputeTier(s, 4); shiftStance(s, 'us', 0.1); } } },
@@ -181,17 +170,6 @@ export const DECISIONS: DecisionDef[] = [
         fx: { add: { intel: 1, verification: 0.5, computeBoost: -0.003 } } },
       { label: 'Leave them', lean: 'race', chips: ['g:compute growth +'],
         fx: { add: { computeBoost: 0.003 } } },
-    ],
-  },
-  {
-    id: 'old_chips', title: 'Old chips', phases: [1, 2, 3],
-    text: 'Retired AI chips are being resold on the gray market.',
-    when: (s) => s.q >= 3,
-    options: [
-      { label: 'Destroy them', lean: 'safety', chips: ['b:prosperity −0.5%', 'h:'],
-        fx: { mul: { gdp: 0.995 }, flags: { noRecycling: true } } },
-      { label: 'Let them sell', lean: 'race', chips: ['g:prosperity +0.5%', 'h:'],
-        fx: { mul: { gdp: 1.005 } } },
     ],
   },
   {
@@ -283,17 +261,6 @@ export const DECISIONS: DecisionDef[] = [
         fx: { add: { verification: -1.5, tension: 8 }, run: (s) => unlockComputeTier(s, 8) } },
       { label: 'Keep it on Earth', lean: 'safety', chips: ['g:tension −3', 'b:lead −'],
         fx: { add: { tension: -3 }, mul: { raw: 0.97 } } },
-    ],
-  },
-  {
-    id: 'medicine', title: 'AI medicine', phases: [3, 4, 5],
-    text: 'AI-designed drugs are ready. Trials take years.',
-    when: (s) => s.cap >= 8.6,
-    options: [
-      { label: 'Skip the trials', lean: 'race', chips: ['g:prosperity +4%', 'g:trust +4', 'b:jobs +'],
-        fx: { add: { trust: 4, deployment: 1 }, mul: { gdp: 1.04 } } },
-      { label: 'Run the trials', lean: 'safety', chips: ['g:trust +2', 'b:prosperity −'],
-        fx: { add: { trust: 2 } } },
     ],
   },
   {

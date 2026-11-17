@@ -200,13 +200,15 @@ Proposed: **cut** old chips, AI medicine and AI in government; **merge** chip tr
 - AI dividend → trust, which now decides elections;
 - the destruction pledge → the secret-datacenter chain.
 
+**Progress (2026-11-16):** ✅ cut AI in government, AI medicine and old chips. ✅ Old chips merged into chip tracking instead of export controls: tracking now covers resold chips, costs 0.5% prosperity, and cuts China's odds of starting covert compute to 0.4× (was 0.6×, plus 0.5× from old chips). ✅ Power for AI is gated to Q4+ and the Arctic pact to Q6+ for a slower reveal. Audit: 58 → 55 decisions, 34 → 32 with no effect. ⏳ The rewires above are still to do.
+
 ## Owner decisions (2026-11-16)
 
 1. ✅ Plan B is redefined to AI 2040's "sabotage, then spend the lead", with a cyber/kinetic doctrine.
 2. ✅ Plans are ordered by AI 2040: expert A ~80%, B/C ~70%, S ~65%, D ~45%.
 3. ✅ One Plan C; regulating during it makes it C+.
 4. ✅ Plan S gets a lift condition chosen at the halt, filled by safety work.
-5. ⏳ Gilded Cage on Plan C: default is to treat it as a bug and investigate.
+5. ⏳ Gilded Cage on Plan C: investigated. `npm run sim` now reports China's aligned ASI as `cn-first`. **Every** Gilded Cage on Plan C is China getting there first, never US power concentration (all-safety: 98% cn-first). So the logic isn't buggy: `endingFor` scores China's aligned ASI as the Gilded Cage, and over-burning the lead loses the race. Open: should China-first become its own ending?
 6. ⏳ Emergent paths: default is to keep the Fork menu until after Step 5.
 
 ## Open questions for the owner (original)

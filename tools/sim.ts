@@ -57,7 +57,9 @@ for (const bot of BOTS.filter((b) => !only || b.name === only)) {
       const h = s.history.find((x) => x.cap >= cap);
       if (h) reached[rung].push(START_YEAR + h.q / 4);
     }
-    endings[s.ending ?? 'none'] = (endings[s.ending ?? 'none'] ?? 0) + 1;
+    // China's aligned ASI scores as the Gilded Cage, but it's a lost race, not power at home: report it apart.
+    const label = s.ending === 'gilded' && s.asiBy === 'cn' ? 'cn-first' : s.ending ?? 'none';
+    endings[label] = (endings[label] ?? 0) + 1;
     endQ += s.endQ ?? s.q;
     align += s.alignment;
     score += s.cumGdp * ENDINGS[s.ending!].multiplier;
@@ -71,7 +73,7 @@ for (const bot of BOTS.filter((b) => !only || b.name === only)) {
   }
   wins[bot.name] = (endings.flourishing ?? 0) / runs;
   const pct = (n: number) => `${Math.round((100 * n) / runs)}%`;
-  const asiRuns = Object.entries(endings).filter(([k]) => ['flourishing', 'gilded', 'loc'].includes(k)).reduce((a, [, v]) => a + v, 0);
+  const asiRuns = Object.entries(endings).filter(([k]) => ['flourishing', 'gilded', 'cn-first', 'loc'].includes(k)).reduce((a, [, v]) => a + v, 0);
   console.log(`\n== ${bot.name} (${runs} runs) ==`);
   console.log('  endings:', Object.entries(endings).map(([k, v]) => `${k} ${pct(v)}`).join(', '));
   console.log(`  avg end ${quarterLabel(Math.round(endQ / runs))} | avg ASI ${asiRuns ? quarterLabel(Math.round(asi / Math.max(1, asiRuns))) : '-'} | final alignment ${(align / runs).toFixed(0)} | score ${(score / runs).toFixed(0)}`);

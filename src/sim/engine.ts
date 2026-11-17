@@ -290,8 +290,8 @@ function chinaActs(s: GameState) {
   // Covert compute means cheating on a deal or moratorium; smuggling under export controls is the cnRaw leak below.
   const rulesToBreak = s.dealActive || !!s.flags.moratorium;
   if (s.covert === 0 && s.intent !== 'cooperative' && rulesToBreak && s.q >= 10) {
-    const p = (s.intent === 'racing' ? 0.22 : 0.1) * (s.flags.noRecycling ? 0.5 : 1)
-      * (s.flags.chipTracking ? 0.6 : 1) * (s.flags.macd ? 0.5 : 1);
+    const p = (s.intent === 'racing' ? 0.22 : 0.1) * (s.flags.chipTracking ? 0.4 : 1)
+      * (s.flags.macd ? 0.5 : 1);
     if (chance(s, p)) {
       s.covert = s.cnRaw * 0.08;
       moment(s, 'China began a covert compute project, hidden under a "steel plant" in Xinjiang.', 'hidden');
