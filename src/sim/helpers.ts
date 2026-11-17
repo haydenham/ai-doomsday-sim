@@ -39,6 +39,7 @@ const BOUNDS: Partial<Record<string, [number, number]>> = {
   dealShift: [-4, 4],
   rdBoost: [-0.9, 3],
   exportControls: [0, 3],
+  cnHawk: [0, 100],
 };
 
 export function applyFx(s: GameState, fx: Fx | undefined) {

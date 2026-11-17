@@ -373,6 +373,8 @@ Per-plan scenarios, failure modes, targets and cut list are in `SCENARIOS.md` (d
 ### Changes (each grounded in AI 2040)
 
 1. **China adapts.** Its posture (cooperative / opportunistic / racing) moves with what you do: the lead, tension, sanctions, theft, how you treat a deal. Humiliate a cooperative China and it starts racing. A racing China that falls far behind may come to the table. The opponent becomes a system, not a seed.
+   - ✅ **Built (2026-11-17), `sim/china.ts`:** a hidden hawkishness score 0–100 (cooperative < 33, racing > 67, with a 6-point band) replaces the one-way tension ladder. Drift: tension over 25; a US lead of 4–30 months breeds fear (+), over 30 is hopeless (−); a Chinese lead breeds confidence; export controls; deal fatigue, weak verification (+), a well-verified, well-kept deal (−). Nudges from strikes, caught sabotage, sanctions, deal collapse, the ceiling raise (+); and from sharing research, the joint lab, open research, the backchannel, standing down, recommitting (−).
+   - **Measured (300 seeds, never touch / reactive / expert):** A 50/86/83 (was 56/88/85), B 0/52/59 (was 0/53/69), C 9/43/49, D 0/19/40. Plan A barely moved: good verification plus diplomacy keeps China cooperative. A first tune with a pull to the middle made A *easier* (99%), because under a deal tension sits near zero. B expert fell because strikes harden China permanently.
 2. **Keeping a deal is a fight.**
    - At home: labs and Congress lobby to loosen the ceiling while the economy grows slowly under it.
    - Abroad: compute outside the deal (Gulf, rogue labs) grows.

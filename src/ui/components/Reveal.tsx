@@ -21,6 +21,9 @@ export function Reveal({ s }: { s: GameState }) {
   const blind = firstReadout === undefined
     ? [{ from: xs[0], to: xs[xs.length - 1], label: 'No alignment readout. You never saw this line.' }]
     : firstReadout > 0 ? [{ from: xs[0], to: firstReadout, label: 'No readout' }] : [];
+  const turns = s.moments.filter((m) => m.text.startsWith('China\'s leadership turned'));
+  const firstIntent = turns[0]?.text.match(/from (\w+) to/)?.[1];
+  const intentPath = firstIntent ? `${firstIntent} → ${s.intent}` : s.intent;
   const sc = score(s);
   const share = shareText(s);
   const momentMarkers = s.moments.filter((m) => m.kind === 'hidden' || m.kind === 'danger').map((m) => ({ x: m.q, label: m.text, tone: m.kind }));
@@ -69,7 +72,7 @@ export function Reveal({ s }: { s: GameState }) {
             <table className="hidden-table"><tbody>
               <tr><td>True alignment</td><td className={s.alignment >= ALIGN_LOC ? 'good' : 'bad'}>{Math.round(s.alignment)}%</td></tr>
               <tr><td>Last readout you saw</td><td>{firstReadout === undefined ? '—' : `${Math.round(s.readout)}%`}</td></tr>
-              <tr><td>China's real intent</td><td className="amber">{s.intent}</td></tr>
+              <tr><td>China's real intent</td><td className="amber">{intentPath}</td></tr>
               <tr><td>China's AI alignment</td><td>{Math.round(s.cnAlignment)}%</td></tr>
               <tr><td>Peak covert Chinese compute</td><td>{peakCovert > 0 ? `${bigStr(peakCovert)} H100e` : 'none'}</td></tr>
               <tr><td>Alignment difficulty (seed)</td><td>{difficultyLabel(s.difficulty)}</td></tr>

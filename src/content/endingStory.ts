@@ -157,6 +157,7 @@ function cnfirst(s: GameState) {
     item(momentQ(s, 'China stole'), `China stole your frontier model's weights${s.moments.filter((m) => m.text.startsWith('China stole')).length > 1 ? ', and not for the last time' : ''}.`),
     item(momentQ(s, 'China broke out'), 'China revealed a model trained in secret, past the treaty cap.'),
     item(momentQ(s, 'The US-China deal collapsed'), 'the deal collapsed, and China raced harder than you did.'),
+    item(momentQ(s, 'China\'s leadership turned from opportunistic to racing') ?? momentQ(s, 'China\'s leadership turned from cooperative to racing'), 'Beijing\'s hardliners took over AI policy.'),
     item(chose(s, 'exports', 'Keep selling')?.q, 'you kept selling China chips.'),
     item(chose(s, 'b_standdown', 'Stand down')?.q, 'you ended the campaign, and China recovered.'),
     item(momentQ(s, 'China took the lead'), 'China took the lead. You never got it back.'),
@@ -247,6 +248,7 @@ function coldwar(s: GameState) {
     item(momentQ(s, 'You chose a cyber campaign'), 'you began a cyber campaign against China.'),
     item(momentQ(s, 'A skirmish in the Taiwan Strait'), 'a skirmish in the Taiwan Strait damaged the world\'s chip fabs.'),
     item(momentQ(s, 'The US-China deal collapsed'), 'the deal collapsed.'),
+    item(momentQ(s, 'China\'s leadership turned from opportunistic to racing') ?? momentQ(s, 'China\'s leadership turned from cooperative to racing'), 'Beijing\'s hardliners took over AI policy.'),
     item(chose(s, 'cn_covert_found', 'Build our own')?.q, 'you answered China\'s secret datacenter with one of your own.'),
     s.dealActive ? item(s.decisions.find((d) => d.id === 'fork_A')?.q, 'you signed a treaty that kept both sides under a ceiling. It held.') : null,
   ]) || 'Neither side would slow down, and neither could pull ahead.';

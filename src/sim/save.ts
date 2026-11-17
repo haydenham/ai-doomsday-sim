@@ -2,6 +2,7 @@ import type { GameState } from './types';
 import { DECISION_BY_ID } from '../content/decisions';
 import { EVENT_BY_ID, eventToPending } from '../content/events';
 import { newGame } from './engine';
+import { HAWK_OF } from './china';
 
 // Autosave survives a refresh, a closed tab, or a dev-server reload.
 // Pending choices hold functions, so they're saved by id and rebuilt from content on load.
@@ -24,6 +25,7 @@ export function loadGame(): GameState | null {
     if (saved.ending || typeof saved.t !== 'number') return null;
     // Fields added since the save get their new-game defaults.
     const s = Object.assign(newGame(saved.seed), saved);
+    s.cnHawk = saved.cnHawk ?? HAWK_OF[saved.intent];
     if (s.negotiation) {
       s.negotiation.redLines ??= [];
       s.negotiation.strain ??= 0;

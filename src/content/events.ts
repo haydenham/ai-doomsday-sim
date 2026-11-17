@@ -32,6 +32,7 @@ const collapseDeal = (s: GameState, why: string) => {
   s.pauseCap = null;
   s.cnPauseCap = null;
   s.tension = Math.min(100, s.tension + 20);
+  s.cnHawk = Math.min(100, s.cnHawk + 10);
   for (const c of s.countries) c.inDeal = false;
   declareCovert(s);
   s.flags.talksEndedQ = s.q;
@@ -159,7 +160,7 @@ export const EVENTS: EventDef[] = [
     choices: [
       { label: 'Lock everything down', lean: 'safety', chips: ['g:security +3', 'b:tension +10', 'b:compute growth −'],
         fx: { add: { security: 3, tension: 10, computeBoost: -0.004 } } },
-      { label: 'Expel diplomats', lean: 'hawk', chips: ['g:trust +3', 'b:tension +15'], fx: { add: { tension: 15, trust: 3 } } },
+      { label: 'Expel diplomats', lean: 'hawk', chips: ['g:trust +3', 'b:tension +15'], fx: { add: { tension: 15, trust: 3, cnHawk: 5 } } },
     ],
     onFire: {
       // They get the deployed model, not research still held back by a pause or treaty.
@@ -182,7 +183,7 @@ export const EVENTS: EventDef[] = [
     body: 'Chinese ships surround Taiwan and its chip fabs.',
     choices: [
       { label: 'Back down', lean: 'dove', chips: ['g:tension −40', 'b:trust −8', 'b:China compute +10%'],
-        fx: { add: { tension: -40, trust: -8 }, mul: { cnRaw: 1.1 }, moment: 'You backed down in the Taiwan Strait.' } },
+        fx: { add: { tension: -40, trust: -8, cnHawk: 5 }, mul: { cnRaw: 1.1 }, moment: 'You backed down in the Taiwan Strait.' } },
       { label: 'Hold firm', lean: 'hawk', chips: ['n:50/50', 'b:fabs at risk'],
         fx: {
           run: (s) => {
@@ -223,7 +224,7 @@ export const EVENTS: EventDef[] = [
     body: (s) => `Satellites find ${(s.covert / 1e6).toFixed(1)} million undeclared chips in Xinjiang.${covertCap(s) >= s.cnCap - 0.05 ? ' Its model is past the treaty cap.' : ''}`,
     choices: (s): Choice[] => [
       { label: 'Confront Beijing', lean: 'hawk', chips: ['g:shut down', 'n:they may move it', 'b:tension +15', ...(s.dealActive ? ['b:deal −10'] : [])],
-        fx: { add: { tension: 15, dealIntegrity: s.dealActive ? -10 : 0 }, flags: { cnCovertKnown: true },
+        fx: { add: { tension: 15, dealIntegrity: s.dealActive ? -10 : 0, cnHawk: 4 }, flags: { cnCovertKnown: true },
           run: (st) => {
             // A cheater that means it denies everything and moves the chips.
             if (rand(st) < (st.intent === 'racing' ? 0.5 : 0.3)) {
@@ -239,6 +240,7 @@ export const EVENTS: EventDef[] = [
           run: (st) => {
             if (rand(st) < 0.35) {
               st.tension = Math.min(100, st.tension + 20);
+              st.cnHawk = Math.min(100, st.cnHawk + 15);
               if (st.dealActive) st.dealIntegrity = Math.max(0, st.dealIntegrity - 20);
               ticker(st, 'Beijing accuses the CIA of sabotaging "a steel plant." It has proof.', 'warn');
               moment(st, 'Your sabotage of China\'s secret datacenter was traced back to you.', 'danger');
@@ -286,11 +288,11 @@ export const EVENTS: EventDef[] = [
     body: 'How hard do we hit them?',
     choices: [
       { label: 'Cyber', lean: 'dove', chips: ['g:China compute −15%', 'g:China slows', 'b:tension +10'],
-        fx: { mul: { cnRaw: 0.85 }, add: { tension: 10 },
+        fx: { mul: { cnRaw: 0.85 }, add: { tension: 10, cnHawk: 5 },
           headline: 'Malware spreads through Zhonghe\'s training clusters. No one claims it.',
           moment: 'You chose a cyber campaign against China\'s AI program.' } },
       { label: 'Kinetic', lean: 'hawk', chips: ['g:China compute −30%', 'g:China slows more', 'b:tension +30', 'b:trust −4', 'b:power → 45+', 'b:war risk'],
-        fx: { mul: { cnRaw: 0.7, cnAlgo: 0.9 }, add: { tension: 30, trust: -4 }, flags: { kinetic: true },
+        fx: { mul: { cnRaw: 0.7, cnAlgo: 0.9 }, add: { tension: 30, trust: -4, cnHawk: 15 }, flags: { kinetic: true },
           run: (s) => concentratePower(s, 45, 8),
           headline: 'Cruise missiles hit a datacenter in Inner Mongolia. Beijing vows a response.',
           moment: 'You chose strikes on China\'s datacenters.' } },
@@ -312,7 +314,7 @@ export const EVENTS: EventDef[] = [
       const cost = n === 0 ? 0.98 : 0.95;
       return [
         { label: 'Recommit', lean: 'dove', chips: [`g:deal +${restore}`, `b:prosperity −${Math.round((1 - cost) * 100)}%`, 'b:lift export controls', ...(n === 1 ? ['b:last time'] : [])],
-          fx: { add: { dealIntegrity: restore }, mul: { gdp: cost }, run: (st) => { st.exportControls = 0; st.flags.recommits = n + 1; } } },
+          fx: { add: { dealIntegrity: restore, cnHawk: -3 }, mul: { gdp: cost }, run: (st) => { st.exportControls = 0; st.flags.recommits = n + 1; } } },
         lapse,
       ];
     },

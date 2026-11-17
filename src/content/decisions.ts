@@ -57,7 +57,7 @@ export const DECISIONS: DecisionDef[] = [
     when: (s) => s.q >= 2,
     options: [
       { label: 'Ban them', lean: 'hawk', chips: ['g:China slows', 'b:tension +15'],
-        fx: { add: { exportControls: 1, tension: 15 }, flags: { chinaAware: true }, schedule: [{ id: 'smuggling', delay: 3 }],
+        fx: { add: { exportControls: 1, tension: 15, cnHawk: 5 }, flags: { chinaAware: true }, schedule: [{ id: 'smuggling', delay: 3 }],
           headline: 'Chip export ban. Beijing: "technological containment."' } },
       { label: 'Keep selling', lean: 'dove', chips: ['g:prosperity +1%', 'g:tension −5', 'b:China compute +10%'],
         fx: { mul: { gdp: 1.01, cnRaw: 1.1 }, add: { tension: -5 }, flags: { chinaAware: true } } },
@@ -125,7 +125,7 @@ export const DECISIONS: DecisionDef[] = [
     options: [
       { label: 'Talk', lean: 'dove', chips: ['g:tension −10', 'g:learn their intent', 'b:trust −3'],
         fx: {
-          add: { tension: -10, trust: -3, intel: 0.5 },
+          add: { tension: -10, trust: -3, intel: 0.5, cnHawk: -3 },
           run: (s) => {
             const honest = rand(s) < 0.55 + s.intel * 0.08;
             const read = honest ? s.intent : (['cooperative', 'opportunistic', 'racing'] as const)[Math.floor(rand(s) * 3)];
@@ -309,7 +309,7 @@ export const DECISIONS: DecisionDef[] = [
     options: [
       { label: 'Strike', lean: 'hawk', chips: ['g:China compute −25%', 'b:tension +18', 'b:retaliation risk'],
         fx: {
-          mul: { cnRaw: 0.75 }, add: { tension: 18 },
+          mul: { cnRaw: 0.75 }, add: { tension: 18, cnHawk: 5 },
           run: (s) => {
             if (rand(s) < 0.35) { s.raw *= 0.88; ticker(s, 'Retaliation: a Texas datacenter goes dark.', 'warn'); }
             else ticker(s, 'Fire at a Chinese datacenter. Beijing blames saboteurs.');
@@ -324,11 +324,11 @@ export const DECISIONS: DecisionDef[] = [
     when: (s) => !!s.flags.bCampaign && s.q >= 12,
     options: [
       { label: 'Stand down', lean: 'dove', chips: ['g:tension −20', 'g:trust +4', 'b:China recovers'],
-        fx: { add: { tension: -20, trust: 4 }, flags: { bCampaign: false },
+        fx: { add: { tension: -20, trust: 4, cnHawk: -8 }, flags: { bCampaign: false },
           headline: 'The President ends the campaign against China. Beijing calls it "a first step."',
           moment: 'You ended the campaign against China.' } },
       { label: 'Keep pressing', lean: 'hawk', chips: ['g:China compute −10%', 'b:tension +8', 'b:power +4'],
-        fx: { mul: { cnRaw: 0.9 }, add: { tension: 8, powerConc: 4 } } },
+        fx: { mul: { cnRaw: 0.9 }, add: { tension: 8, powerConc: 4, cnHawk: 4 } } },
     ],
   },
   {
@@ -336,7 +336,7 @@ export const DECISIONS: DecisionDef[] = [
     text: 'Punish any country that sells chips to China.',
     options: [
       { label: 'Sanction', lean: 'hawk', chips: ['g:China slows', 'b:neutrals drift away', 'b:tension +8'],
-        fx: { add: { exportControls: 1, tension: 8 }, run: (s) => shiftStance(s, 'row', -0.25) } },
+        fx: { add: { exportControls: 1, tension: 8, cnHawk: 5 }, run: (s) => shiftStance(s, 'row', -0.25) } },
       { label: 'Persuade', lean: 'dove', chips: ['g:neutrals drift closer', 'b:China grows'],
         fx: { mul: { cnRaw: 1.05 }, run: (s) => shiftStance(s, 'row', 0.15) } },
     ],
@@ -375,7 +375,7 @@ export const DECISIONS: DecisionDef[] = [
     text: 'Give China our alignment methods?',
     options: [
       { label: 'Share', lean: 'dove', chips: ['g:tension −8', 'b:China learns', 'h:'],
-        fx: { add: { tension: -8, cnAlignment: 15 }, mul: { cnAlgo: 1.08 } } },
+        fx: { add: { tension: -8, cnAlignment: 15, cnHawk: -5 }, mul: { cnAlgo: 1.08 } } },
       { label: 'Keep it', lean: 'hawk', chips: ['g:lead kept', 'b:tension +3'], fx: { add: { tension: 3 } } },
     ],
   },
@@ -396,7 +396,7 @@ export const DECISIONS: DecisionDef[] = [
     when: (s) => s.dealActive,
     options: [
       { label: 'Build it', lean: 'dove', chips: ['g:safety +1', 'g:deal +5', 'b:China learns', 'h:'],
-        fx: { add: { safety: 1, cnAlignment: 15, dealIntegrity: 5 }, mul: { cnAlgo: 1.05 }, flags: { jointLab: true } } },
+        fx: { add: { safety: 1, cnAlignment: 15, dealIntegrity: 5, cnHawk: -4 }, mul: { cnAlgo: 1.05 }, flags: { jointLab: true } } },
       { label: 'Separate labs', lean: 'hawk', chips: ['g:lead kept', 'b:deal −3'], fx: { add: { dealIntegrity: -3 } } },
     ],
   },
@@ -415,7 +415,7 @@ export const DECISIONS: DecisionDef[] = [
     text: 'Publish all frontier research, for everyone.',
     options: [
       { label: 'Publish', lean: 'people', chips: ['g:power −8', 'g:deal +6', 'b:others catch up'],
-        fx: { add: { openness: 2, powerConc: -8, dealIntegrity: 6 }, mul: { cnAlgo: 1.1 } } },
+        fx: { add: { openness: 2, powerConc: -8, dealIntegrity: 6, cnHawk: -3 }, mul: { cnAlgo: 1.1 } } },
       { label: 'Keep secrets', lean: 'power', chips: ['g:lead kept', 'b:power +4'], fx: { add: { powerConc: 4 } } },
     ],
   },
@@ -425,7 +425,7 @@ export const DECISIONS: DecisionDef[] = [
     when: (s) => s.dealActive && s.pauseCap !== null && s.q >= 14,
     options: [
       { label: 'Raise it sooner', lean: 'race', chips: ['g:prosperity +2%', 'g:schedule +6mo', 'b:deal −6', 'h:'],
-        fx: { add: { dealShift: 2, dealIntegrity: -6 }, mul: { gdp: 1.02 } } },
+        fx: { add: { dealShift: 2, dealIntegrity: -6, cnHawk: 4 }, mul: { gdp: 1.02 } } },
       { label: 'Slow it down', lean: 'safety', chips: ['g:safety +0.5', 'b:schedule −6mo', 'b:trust −4'],
         fx: { add: { dealShift: -2, safety: 0.5, trust: -4 } } },
     ],
@@ -445,7 +445,7 @@ export const DECISIONS: DecisionDef[] = [
     text: 'An unregistered datacenter is training. Owner unknown.',
     options: [
       { label: 'Strike it', lean: 'hawk', chips: ['g:covert −60%', 'b:tension +15'],
-        fx: { mul: { covert: 0.4 }, add: { tension: 15 }, run: (s) => { if (s.cnPauseCap === null) s.cnRaw *= 0.8; } } },
+        fx: { mul: { covert: 0.4 }, add: { tension: 15, cnHawk: 6 }, run: (s) => { if (s.cnPauseCap === null) s.cnRaw *= 0.8; } } },
       { label: 'Diplomacy', lean: 'dove', chips: ['g:tension −3', 'h:'], fx: { add: { tension: -3, covert: 2e6 } } },
     ],
   },

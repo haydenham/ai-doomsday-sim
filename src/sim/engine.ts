@@ -7,6 +7,7 @@ import { chance, gauss, pick, rand, range, weighted } from './rng';
 import { applyFx, clamp, moment, ticker, unlockComputeTier } from './helpers';
 import { baseRdMult, capOf, covertCap, deployedAlgo, leadMonths } from './derived';
 import { LAB_ALLOC, capFactor, dealCapStrain, driftAlloc, fundingTarget, rawGrowth, safetyRate } from './alloc';
+import { HAWK_OF, updatePosture } from './china';
 import { alignCeiling, cnFrontierAlignment, takeoverRisks } from './risk';
 import { ALGO_TIERS } from '../content/ladders';
 import { PANELS } from '../content/panels';
@@ -41,7 +42,7 @@ export function newGame(seed: number): GameState {
     exportControls: 0, rdBoost: 0, growthHold: 0, pauseCap: null, overhangRate: 1, ubi: false,
     dealFloor: 0, dealShift: 0, alloc: { ...LAB_ALLOC }, allocMoved: 0, funding: 1, capRate: 0, cnCapRate: 0,
     cnRaw, cnAlgo, cnCap: capOf(cnRaw, cnAlgo), cnRdMult: 1, cnPauseCap: null, covert: 0,
-    cnAlignment: range(s, 25, 55), intent,
+    cnAlignment: range(s, 25, 55), intent, cnHawk: HAWK_OF[intent],
     alignment: range(s, 56, 68), difficulty: range(s, 0.75, 1.35), timeline: range(s, 0.85, 1.2),
     readout: 0, readoutSigma: 24,
     dealActive: false, dealIntegrity: 0, negotiation: null,
@@ -214,7 +215,7 @@ function quarterBoundary(s: GameState) {
     // Shared inspections and norms pull China's safety practice toward yours.
     s.cnAlignment += (s.alignment - s.cnAlignment) * (s.flags.jointLab ? 0.05 : 0.02);
   }
-  tensionLadder(s);
+  updatePosture(s);
 
   updateReadout(s);
   algoBreakthrough(s);
@@ -238,18 +239,6 @@ function quarterBoundary(s: GameState) {
   rollTakeover(s);
   s.history.push(snapshot(s));
   checkEnding(s);
-}
-
-/** Tension 50: China retaliates (see events). 70: its leadership hardens one step. Re-arms once tension falls under 50. */
-function tensionLadder(s: GameState) {
-  if (s.tension < 50) s.flags.hardened = false;
-  if (s.tension >= 70 && !s.flags.hardened && s.intent !== 'racing') {
-    s.flags.hardened = true;
-    const from = s.intent;
-    s.intent = s.intent === 'cooperative' ? 'opportunistic' : 'racing';
-    ticker(s, 'Beijing\'s hardliners take over AI policy.', 'warn');
-    moment(s, `Tension hardened China's leadership from ${from} to ${s.intent}.`, 'hidden');
-  }
 }
 
 /** Any frontier model past Superhuman AI Researcher can slip control. See sim/risk.ts. */

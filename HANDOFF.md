@@ -21,14 +21,14 @@ Playable local prototype: a real-time, decision-driven strategy game about US AI
 
 **Owner playtest (2026-11-17):** lost Plan A to an AI takeover after the evals showed it failing alignment tests. "This is good." The owner accepts Plan C below target.
 
-**Latest sim (Flourishing %, 300 seeds):**
+**Latest sim after 5.1 (Flourishing %, 300 seeds):**
 
 | Plan | Never touch the split | Reactive | Expert | Target (reactive / expert) |
 |---|---|---|---|---|
-| A | 56 | 88 | 85 | 55–65 / ~80 |
-| B | 0 | 53 | 69 | 40–50 / ~70 |
-| C | 10 | 45 | 49 | accepted below target |
-| D | 0 | 21 | 44 | 20–30 / ~45 |
+| A | 50 | 86 | 83 | 55–65 / ~80 |
+| B | 0 | 52 | 59 | 40–50 / ~70 |
+| C | 9 | 43 | 49 | accepted below target |
+| D | 0 | 19 | 40 | 20–30 / ~45 |
 | S | no bot yet | | | ~65 expert |
 
 **Audit:** 26 of 57 decisions still change the result by less than 3 points.
@@ -38,7 +38,7 @@ Playable local prototype: a real-time, decision-driven strategy game about US AI
 Work in this order. After each item, run `npm run typecheck && npm run build` and `npm run sim`, then commit. Ask the owner before any **new** design choice that affects gameplay; the items below are already approved.
 
 1. ~~Ending stories for every ending~~ ✅ done (see Status).
-2. **5.1 China adapts.** China's posture (cooperative, opportunistic or racing) moves with what you do: the lead, tension, sanctions, theft, how you treat the deal. The cheating chance already reads the posture. This is the biggest lever for bringing Plan A down to target.
+2. ~~5.1 China adapts~~ ✅ done (`sim/china.ts`). A hidden hawkishness score (0–100) sets the posture, with a 6-point band so it doesn't flicker. Quarterly drift: tension above 25; fear when the US leads by 4–30 months, a softer line when it leads by 30+; confidence when China leads; export controls; under a deal, +0.6 fatigue, +1 when verification < 2, −1.2 when verification ≥ 3 and integrity ≥ 70. One-off nudges: strikes, caught sabotage, sanctions, a collapsed deal, a raised ceiling (harder); sharing research, the joint lab, open research, the backchannel, standing down, recommitting (softer). Shifts show as a ticker line ("hardliners/reformers gain ground"), move the intel panel's estimate, and appear on the Reveal ("opportunistic → racing"). **Result:** Plan A barely moved (reactive 88→86): a player who verifies well and is gentle with Beijing keeps China cooperative. **B expert fell 69→59**, because strikes now harden China for good. Raise both with the owner.
 3. **5.5 Warning shots.** A rising series of incidents from the takeover risk: sandbagged evals, a model copying itself off a cluster, an unclaimed cyberattack. Some are false alarms, and each forces a costly choice (pause and lose lead, or press on). They should feed the ending story's "warnings" lines.
 4. **5.4 The readout lies more as capability grows.** Show a range instead of one number; interpretability is what keeps it honest.
 5. **5.6 Stricter endings.** A fast final climb needs more alignment margin, and Flourishing needs a minimum level of trust.

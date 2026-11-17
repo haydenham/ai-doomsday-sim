@@ -23,7 +23,8 @@ export type NumKey =
   | 'covert'
   | 'rdBoost'
   | 'growthHold'
-  | 'dealShift';
+  | 'dealShift'
+  | 'cnHawk';
 
 export type AllocKey = 'cap' | 'safety' | 'deploy' | 'security';
 export type Alloc = Record<AllocKey, number>;
@@ -184,7 +185,9 @@ export interface GameState {
   cnPauseCap: number | null;
   covert: number; // hidden H100e
   cnAlignment: number; // hidden
-  intent: Intent; // hidden
+  intent: Intent; // hidden; follows cnHawk (sim/china.ts)
+  /** Hidden: how hawkish Beijing is, 0–100. Sets intent. */
+  cnHawk: number;
 
   // Hidden seeds
   alignment: number;
