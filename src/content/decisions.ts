@@ -363,10 +363,11 @@ export const DECISIONS: DecisionDef[] = [
   },
   // ── Plan C ────────────────────────────────────────────────────────────
   {
-    id: 'c_interp', title: 'Interpretability', phases: POST, paths: ['C', 'A'],
+    id: 'c_interp', title: 'Interpretability', phases: POST, paths: ['C', 'A'], max: 2,
     text: 'A crash program to read what models are thinking.',
     options: [
-      { label: 'Fund it', lean: 'safety', chips: ['g:safety +2', 'b:prosperity −1%'], fx: { add: { safety: 2 }, mul: { gdp: 0.99 } } },
+      { label: 'Fund it', lean: 'safety', chips: ['g:safety +1', 'g:readout harder to fool', 'b:prosperity −1%'],
+        fx: { add: { safety: 1 }, mul: { gdp: 0.99 }, run: (s) => { s.flags.interp = Number(s.flags.interp ?? 0) + 1; } } },
       { label: 'Skip', lean: 'race', chips: ['g:compute growth +'], fx: { add: { computeBoost: 0.005 } } },
     ],
   },

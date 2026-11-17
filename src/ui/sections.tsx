@@ -168,7 +168,8 @@ export function Alignment({ s }: { s: GameState }) {
   const verdict = r >= 75 ? 'looks aligned' : r >= 55 ? 'probably fine' : r >= 40 ? 'concerning' : 'danger';
   return (
     <Section title="alignment readout" className="teal">
-      <Stat label="estimate" hint="What your evals say about alignment. ± is the uncertainty. Capable models can fool it." value={r} word={<>{Math.round(r)}% <span className="dim">±{Math.round(s.readoutSigma)}</span></>} tone={r < 40 ? 'bad' : undefined} />
+      <Stat label="estimate" hint="What your evals say about alignment, as a range. Smarter models fool it more. Interpretability keeps it honest." value={r}
+        word={<>{Math.round(Math.max(0, r - s.readoutSigma))}–{Math.round(Math.min(100, r + s.readoutSigma))}%</>} tone={r < 40 ? 'bad' : undefined} />
       <div className={`line ${r >= 55 ? 'good' : r >= 40 ? 'amber' : 'bad'}`}>{verdict}</div>
       <div className="line dim">it can be fooled.</div>
     </Section>

@@ -265,8 +265,12 @@ function updateReadout(s: GameState) {
   // Neuralese blurs the evals; so does wartime secrecy under Plan B's campaign.
   const blur = (s.algoTier >= 6 ? 1.3 : 1) * (s.flags.bCampaign ? 1.15 : 1);
   const sigma = (24 / (1 + 0.45 * s.safety + 0.25 * s.verification)) * blur;
-  // Capable, misaligned models learn to look aligned. Safety work shrinks the gap.
-  const bias = s.cap > 7.5 ? (s.cap - 7.5) * 9 * (1 - s.alignment / 100) * blur * Math.max(0.25, 1 - 0.07 * s.safety) : 0;
+  // Capable, misaligned models learn to look aligned, faster than general safety work can keep up (Step 5.4).
+  // Only interpretability, reading what the model is actually thinking, keeps the readout honest late.
+  const interp = Number(s.flags.interp ?? 0);
+  const bias = s.cap > 7.5
+    ? 7 * (s.cap - 7.5) ** 1.4 * (1 - s.alignment / 100) * blur * Math.max(0.45, 1 - 0.05 * s.safety) / (1 + 1.5 * interp)
+    : 0;
   s.readout = clamp(s.alignment + bias + gauss(s) * sigma * 0.5, 0, 100);
   s.readoutSigma = sigma;
 }
