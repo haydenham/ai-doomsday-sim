@@ -172,6 +172,26 @@ Keep the owner's steering spread (never touch → reasonable → expert), but **
 | S | 5–15% | 40–50% | ~65% | n/a |
 | D | ~0% | 20–30% | ~45% | 10% |
 
+## Difficulty bar (owner, 2026-11-16: "It should genuinely take some strategy to win")
+
+Making the game harder is the main goal of Step 5, not a side effect. Every Step 5 item is checked against these, on every plan:
+
+| Check | Target | Today (Plan A) |
+|---|---|---|
+| Never touch the split | ≤ 25% | 66% |
+| Always pick the safe answer, light steering | ≤ 40% | ~90% |
+| Any single fixed policy (split + answer style) | ≤ 50% | 92% |
+| Random play | < 5% | 1–3% |
+| Reactive (reads the screen, sensible rules) | 45–60% | 97% |
+| Expert (sees hidden state) | per-plan target above | 98% |
+| Owner replay | loses at least once on A and once on a race | won both first try |
+
+What "strategy" means here:
+- **No dominant answer.** The right choice depends on the state: lead, readout, intel, China's posture. The same option is right one quarter and wrong the next.
+- **Planning ahead.** What you build in Act I (verification, intel, trust, the lead) decides which threats you can see and answer later.
+- **Reading imperfect information.** The readout and warning shots can mislead, so you have to weigh how much to trust them.
+- **The opponent adapts.** China responds to what you do, so one fixed plan can't beat it.
+
 ## Cut list (from the Step 4 audit: no effect on any path)
 
 Proposed: **cut** old chips, AI medicine and AI in government; **merge** chip tracking into export controls; **rewire** the rest to a Fork precondition or a Step 5 lever:
