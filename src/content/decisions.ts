@@ -421,7 +421,7 @@ export const DECISIONS: DecisionDef[] = [
   },
   {
     id: 'a_ceiling', title: 'Treaty review', phases: LATE, paths: ['A'], max: 3, weight: 2,
-    text: 'The labs want the ceiling raised faster.',
+    text: 'The treaty caps how smart AI can get, and the cap rises on a schedule. The labs want it raised sooner.',
     when: (s) => s.dealActive && s.pauseCap !== null && s.q >= 14,
     options: [
       { label: 'Raise it sooner', lean: 'race', chips: ['g:prosperity +2%', 'g:schedule +6mo', 'b:deal −6', 'h:'],

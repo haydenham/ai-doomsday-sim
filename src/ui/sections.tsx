@@ -75,7 +75,7 @@ export function Algorithms({ s }: { s: GameState }) {
     <Section title="algorithms">
       <Row label="efficiency" hint="How much more today's algorithms get from a chip than 2027's did.">{mult(s.algo).num + (mult(s.algo).unit ? ` ${mult(s.algo).unit}` : '')}</Row>
       <Row label="latest" hint="The newest algorithmic breakthrough.">{cur.name.toLowerCase()}</Row>
-      {byAI && <div className="line amber">found by AI</div>}
+      {byAI && <div className="line amber"><span className="has-hint" data-hint="From here on, AI makes its own breakthroughs. Progress speeds up, and people understand less of it.">found by AI, not people</span></div>}
     </Section>
   );
 }
@@ -219,6 +219,11 @@ export function Deal({ s }: { s: GameState }) {
       {s.dealActive
         ? <Stat label="integrity" hint="How well the deal is holding. A capabilities share over 40% wears it down. At 0 it collapses." value={s.dealIntegrity} word={Math.round(s.dealIntegrity)} tone={s.dealIntegrity < 30 ? 'bad' : undefined} />
         : <div className="line bad">no deal in force</div>}
+      {s.dealActive && s.pauseCap !== null && (
+        <Row label="ceiling" hint="The treaty caps how capable AI can get. The cap rises on a schedule: frozen until 2030, Automated Coder by 2031, top-expert AI by 2035, then held until 2040.">
+          {capLevel(s.pauseCap).cur.name.toLowerCase()}
+        </Row>
+      )}
     </Section>
   );
 }
