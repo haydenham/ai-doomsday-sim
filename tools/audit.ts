@@ -42,7 +42,7 @@ for (const d of ids) {
     swing[path] = Math.max(...wins) - Math.min(...wins);
     seen[path] = Math.max(...res.map((r) => r.seen));
   }
-  rows.push({ id: d.id, title: d.title, swing, seen, best: Math.max(...Object.values(swing)) });
+  rows.push({ id: d.id, title: typeof d.title === 'function' ? d.id : d.title, swing, seen, best: Math.max(...Object.values(swing)) });
   process.stdout?.write?.('.');
 }
 

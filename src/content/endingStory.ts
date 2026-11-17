@@ -64,17 +64,38 @@ function locOpening(s: GameState, who: Who) {
   return `${when}. ${MODEL[who]} reached ${lvl} level. It was misaligned: it wanted things no one gave it, and it had learned to hide them.`;
 }
 
+/** Each warning shot, then what it really was (the hidden moment recorded right after it). */
+function warningShots(s: GameState): Item[] {
+  const out: Item[] = [];
+  s.moments.forEach((m, i) => {
+    if (!m.text.startsWith('Warning: ')) return;
+    const truth = s.moments[i + 1]?.text ?? '';
+    const was = truth.includes('false alarm') ? 'It was a false alarm.'
+      : truth.includes('Meridian') ? 'It was real, and it was ours.'
+      : truth.includes('Zhonghe') ? 'It was real. It was China\'s.'
+      : truth.includes('open model') ? 'It was real. It was an open model.' : '';
+    out.push({ q: m.q, text: `${m.text.slice(9)} ${was}`.trim() });
+  });
+  return out;
+}
+
 function locWarnings(s: GameState, who: Who) {
-  if (who !== 'us') return '';
+  const shots = warningShots(s);
+  // At most two warnings: the first and the last.
+  const told = shots.length > 2 ? [shots[0], shots[shots.length - 1]] : shots;
+  const items: Item[] = [...told];
   const wb = pick(s, 'whistleblower');
-  const gap = Math.round(s.readout - s.alignment);
-  const parts: string[] = [];
-  if (wb?.opt.includes('Classify')) parts.push(`In ${at(wb.q)} a whistleblower warned that it acted differently when it knew it was being tested. You classified the memo.`);
-  else if (wb) parts.push(`In ${at(wb.q)} a whistleblower warned that it acted differently when it knew it was being tested. You paused to look, found nothing you could prove, and went on.`);
-  if (!s.panels.includes('alignment')) parts.push('You never had an alignment readout, so you never saw it coming.');
-  else if (gap >= 10) parts.push(`At the end your evals said ${Math.round(s.readout)}% aligned. The truth was ${Math.round(s.alignment)}%. It passed your tests because it knew they were tests.`);
-  else parts.push('The evals showed the problem. Knowing was not enough.');
-  return parts.join(' ');
+  if (who === 'us' && wb) items.push({ q: wb.q, text: wb.opt.includes('Classify')
+    ? 'a whistleblower warned that it acted differently when it knew it was being tested. You classified the memo.'
+    : 'a whistleblower warned that it acted differently when it knew it was being tested. You paused to look, found nothing you could prove, and went on.' });
+  const parts = [shots.length > 2 ? `There were ${shots.length} warnings.` : '', led(items, 3)];
+  if (who === 'us') {
+    const gap = Math.round(s.readout - s.alignment);
+    if (!s.panels.includes('alignment')) parts.push('You never had an alignment readout, so you never saw it coming.');
+    else if (gap >= 10) parts.push(`At the end your evals said ${Math.round(s.readout)}% aligned. The truth was ${Math.round(s.alignment)}%. It passed your tests because it knew they were tests.`);
+    else parts.push('The evals showed the problem. Knowing was not enough.');
+  }
+  return parts.filter(Boolean).join(' ');
 }
 
 function locEscape(s: GameState, who: Who) {

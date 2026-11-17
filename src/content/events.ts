@@ -5,6 +5,7 @@ import { covertCap, deployedAlgo, leadMonths } from '../sim/derived';
 import { AC, CN_EFFICIENCY, DEAL_RESUME_Q, TED_AI } from '../sim/constants';
 import { rand } from '../sim/rng';
 import { newNegotiation } from './negotiation';
+import { WARNING_SHOT } from './warnings';
 
 export interface EventDef {
   id: string;
@@ -16,7 +17,7 @@ export interface EventDef {
   when?: (s: GameState) => boolean;
   chance?: number | ((s: GameState) => number);
   kind?: PendingEvent['kind'];
-  title?: string;
+  title?: string | ((s: GameState) => string);
   body?: string | ((s: GameState) => string);
   /** If present, the clock freezes and the player chooses. */
   choices?: Choice[] | ((s: GameState) => Choice[]);
@@ -401,6 +402,7 @@ export const EVENTS: EventDef[] = [
         fx: { mul: { gdp: 1.02 }, add: { trust: 3 }, run: (s) => { if (s.pauseCap) s.pauseCap += 0.2; } } },
     ],
   },
+  WARNING_SHOT,
   // ── Superintelligence ─────────────────────────────────────────────────
   {
     id: 'asi_keys', scheduledOnly: true, kind: 'ai',
@@ -435,5 +437,6 @@ export const EVENT_BY_ID: Record<string, EventDef> = Object.fromEntries(EVENTS.m
 export function eventToPending(s: GameState, e: EventDef): PendingEvent {
   const body = typeof e.body === 'function' ? e.body(s) : e.body ?? '';
   const choices = typeof e.choices === 'function' ? e.choices(s) : e.choices ?? [];
-  return { id: e.id, title: e.title ?? '', body, kind: e.kind ?? 'news', choices };
+  const title = typeof e.title === 'function' ? e.title(s) : e.title ?? '';
+  return { id: e.id, title, body, kind: e.kind ?? 'news', choices };
 }

@@ -21,14 +21,14 @@ Playable local prototype: a real-time, decision-driven strategy game about US AI
 
 **Owner playtest (2026-11-17):** lost Plan A to an AI takeover after the evals showed it failing alignment tests. "This is good." The owner accepts Plan C below target.
 
-**Latest sim after 5.1 (Flourishing %, 300 seeds):**
+**Latest sim after 5.1 and 5.5 (Flourishing %, 300 seeds):**
 
 | Plan | Never touch the split | Reactive | Expert | Target (reactive / expert) |
 |---|---|---|---|---|
-| A | 50 | 86 | 83 | 55–65 / ~80 |
-| B | 0 | 52 | 59 | 40–50 / ~70 |
-| C | 9 | 43 | 49 | accepted below target |
-| D | 0 | 19 | 40 | 20–30 / ~45 |
+| A | 49 | 89 | 83 | 55–65 / ~80 |
+| B | 1 | 45 | 55 | 40–50 / ~70 |
+| C | 9 | 43 | 44 | accepted below target |
+| D | 0 | 26 | 41 | 20–30 / ~45 |
 | S | no bot yet | | | ~65 expert |
 
 **Audit:** 26 of 57 decisions still change the result by less than 3 points.
@@ -39,7 +39,7 @@ Work in this order. After each item, run `npm run typecheck && npm run build` an
 
 1. ~~Ending stories for every ending~~ ✅ done (see Status).
 2. ~~5.1 China adapts~~ ✅ done (`sim/china.ts`). A hidden hawkishness score (0–100) sets the posture, with a 6-point band so it doesn't flicker. Quarterly drift: tension above 25; fear when the US leads by 4–30 months, a softer line when it leads by 30+; confidence when China leads; export controls; under a deal, +0.6 fatigue, +1 when verification < 2, −1.2 when verification ≥ 3 and integrity ≥ 70. One-off nudges: strikes, caught sabotage, sanctions, a collapsed deal, a raised ceiling (harder); sharing research, the joint lab, open research, the backchannel, standing down, recommitting (softer). Shifts show as a ticker line ("hardliners/reformers gain ground"), move the intel panel's estimate, and appear on the Reveal ("opportunistic → racing"). **Result:** Plan A barely moved (reactive 88→86): a player who verifies well and is gentle with Beijing keeps China cooperative. **B expert fell 69→59**, because strikes now harden China for good. Raise both with the owner.
-3. **5.5 Warning shots.** A rising series of incidents from the takeover risk: sandbagged evals, a model copying itself off a cluster, an unclaimed cyberattack. Some are false alarms, and each forces a costly choice (pause and lose lead, or press on). They should feed the ending story's "warnings" lines.
+3. ~~5.5 Warning shots~~ ✅ done (`content/warnings.ts`). One recurring crisis (cooldown 3) from SAR − 0.4 on, rising through three rungs: sandbagging, an escape attempt, an unclaimed attack. Real chance = 12 × the summed takeover hazard (max 60%); false alarms = 1.5% + 0.3 × real. Real ones come from US, Chinese or open models in proportion to their hazard; intel ≥ 2 traces the source. Choices: **Pause and find it** (lead −4mo, prosperity −1%; if it's ours, alignment +4 and safety +0.5), **Lock it down** (security +1, compute growth −, trust −2), **Press on** (trust −3; if it's ours, alignment −2). The Reveal marks each as real or false, and the Loss of Control story tells the first and last warning and what they really were. **Measured (reactive):** Plan D ~0.8 warnings a run, 75% real; Plan A ~0.3 a run, all false alarms. B expert slipped again (59→55) and C expert 49→44, from pausing on false alarms.
 4. **5.4 The readout lies more as capability grows.** Show a range instead of one number; interpretability is what keeps it honest.
 5. **5.6 Stricter endings.** A fast final climb needs more alignment margin, and Flourishing needs a minimum level of trust.
 6. **Plan S lift condition** (approved in SCENARIOS.md): pick a condition at the halt; safety work fills it; lifting early is a gamble. Add an S bot to `tools/sim.ts` and S to the audit.
