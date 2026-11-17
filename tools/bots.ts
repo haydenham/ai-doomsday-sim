@@ -34,6 +34,7 @@ export const SAFE: Lean[] = ['safety', 'people', 'dove'];
 function reactiveTarget(s: GameState): Partial<Alloc> {
   const lead = leadMonths(s);
   const readout = s.panels.includes('alignment') ? s.readout : null;
+  if (s.flags.moratorium) return { cap: 0, safety: 0.6, deploy: 0.2, security: 0.2 };
   if (s.dealActive) return { cap: 0.3, safety: 0.4, deploy: 0.15, security: 0.15 };
   if (lead < 6) return { cap: 0.8, safety: 0.1, deploy: 0.05, security: 0.05 };
   if (perYear(theftRisk(s)) > 0.25) return { cap: 0.5, safety: 0.2, deploy: 0.05, security: 0.25 };
@@ -45,6 +46,7 @@ function reactiveTarget(s: GameState): Partial<Alloc> {
 function expertTarget(s: GameState): Partial<Alloc> {
   const lead = leadMonths(s);
   const theft = perYear(theftRisk(s));
+  if (s.flags.moratorium) return { cap: 0, safety: 0.6, deploy: 0.15, security: 0.25 };
   if (s.dealActive) return s.alignment < 80 ? { cap: 0.25, safety: 0.5, deploy: 0.1, security: 0.15 } : { cap: 0.3, safety: 0.35, deploy: 0.15, security: 0.2 };
   if (s.alignment < 55 && s.cap >= AC) return { cap: 0.3, safety: 0.55, deploy: 0.05, security: 0.1 };
   if (lead < 3) return { cap: 0.7, safety: 0.2, deploy: 0.05, security: 0.05 };

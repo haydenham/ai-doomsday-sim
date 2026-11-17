@@ -112,12 +112,13 @@ function advance(s: GameState, dt: number) {
   s.safety = Math.min(12, s.safety + dt * safetyRate(s));
   if (s.safety >= 0.3) s.flags.seen_safety = true;
   s.security = clamp(s.security + dt * (2.5 * s.alloc.security - 0.1), 0, 10);
-  if (s.dealActive) s.verification = Math.min(10, s.verification + dt * 0.8 * s.alloc.security);
+  // Inspectors under a deal or a moratorium learn their trade from the security share.
+  if (s.dealActive || s.flags.moratorium) s.verification = Math.min(10, s.verification + dt * 0.8 * s.alloc.security);
 
   // Alignment: risk scales with the *rate* of capability growth, not the level.
   const dC = Math.max(0, s.cap - prevCap);
   const rate = dC / dt;
-  const pathMul = s.path === 'D' ? 1.25 : s.path === 'C' ? 0.9 : 1;
+  const pathMul = (s.path === 'D' ? 1.25 : s.path === 'C' ? 0.9 : 1) * (s.flags.sharpHumans ? 0.6 : 1);
   const neuralese = s.algoTier >= 6 ? 1.15 : 1;
   const shield = Math.max(0.35, 1 - 0.055 * s.safety);
   const loss = dC * 5 * s.difficulty * (0.3 + 1.0 * rate) * pathMul * neuralese * shield;
@@ -462,6 +463,7 @@ export function chooseFork(s: GameState, path: PathId) {
         ticker(s, 'Beijing refuses the moratorium: "We will not be held back by American fear."', 'warn');
         moment(s, 'China refused to join the moratorium.', 'danger');
       }
+      fireEvent(s, EVENT_BY_ID['s_condition']);
       break;
     }
   }

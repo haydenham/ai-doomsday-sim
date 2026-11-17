@@ -181,6 +181,8 @@ AI 2040 splits this into **C** (the labs do it, no laws) and **C+** (domestic re
 
 **Today:** never lifting ends in Stagnation 79%; lifting late wins 33%. No S bot in the steering table, and the audit doesn't cover S.
 
+**Built (2026-11-17):** the lift condition (`content/lift.ts`), with three conditions; S is in the steering table and the audit. Win rates: 0 / 30 / 32 (never touch / reactive / expert), against a ~65% target.
+
 ---
 
 ## Proposed targets (for owner approval)

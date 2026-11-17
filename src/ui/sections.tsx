@@ -10,6 +10,7 @@ import { sfx } from './audio';
 import { rand } from '../sim/rng';
 import { ALGO_TIERS, COMPUTE_TIERS } from '../content/ladders';
 import { AI_DISCOVERIES } from '../content/ticker';
+import { LIFT, liftId, liftProgress } from '../content/lift';
 import { Row, Section, Stat } from './components/term';
 import { WorldMap } from './components/WorldMap';
 import { LEVER_MAX, bigStr, levelWord, moneyStr, mult } from './format';
@@ -210,6 +211,20 @@ export function World({ s }: { s: GameState }) {
       {seen(s, 'intel') && <Lever label="intelligence" hint="Your spy capability. Reveals China's intentions, red lines and hidden datacenters." value={s.intel} />}
       {seen(s, 'intel') && <Row label="china's posture" hint="Your best guess at China's intentions. Better intelligence, better guess." sub={<span className="dim">{Math.round(a.conf * 100)}% sure</span>}>{a.intent}</Row>}
       {a.covertSeen && <div className="line bad">unexplained power use near xinjiang</div>}
+    </Section>
+  );
+}
+
+export function Halt({ s }: { s: GameState }) {
+  const id = liftId(s);
+  if (!id) return null;
+  const p = liftProgress(s);
+  return (
+    <Section title="the halt">
+      {s.flags.moratorium
+        ? <Stat label={LIFT[id].name} hint="The moratorium holds until this condition is met. Lifting before then is a gamble." value={p * 100}
+            word={p >= 1 ? 'met' : `${Math.round(p * 100)}%`} tone={p >= 1 ? 'good' : undefined} />
+        : <div className="line dim">lifted</div>}
     </Section>
   );
 }

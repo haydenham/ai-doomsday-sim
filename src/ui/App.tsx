@@ -5,7 +5,7 @@ import { quarterLabel } from '../sim/constants';
 import { isMuted, setMuted, sfx } from './audio';
 import { DecisionBox, ForkScreen, NegotiationBox, StartScreen } from './components/Overlays';
 import { Reveal } from './components/Reveal';
-import { Algorithms, Allocation, Alignment, Compute, Deal, Frontier, Intelligence, Log, Status, World } from './sections';
+import { Algorithms, Allocation, Alignment, Compute, Deal, Frontier, Halt, Intelligence, Log, Status, World } from './sections';
 
 // Which unlocked panel renders where. Column 0 always exists; the others appear when they have content.
 const LAYOUT: { id: string; col: 0 | 1 | 2; render: (s: GameState) => ReactNode }[] = [
@@ -16,6 +16,7 @@ const LAYOUT: { id: string; col: 0 | 1 | 2; render: (s: GameState) => ReactNode 
   { id: 'intelligence', col: 1, render: (s) => <Intelligence s={s} /> },
   { id: 'frontier', col: 1, render: (s) => <Frontier s={s} /> },
   { id: 'map', col: 2, render: (s) => <World s={s} /> },
+  { id: 'halt', col: 2, render: (s) => <Halt s={s} /> },
   { id: 'deal', col: 2, render: (s) => <Deal s={s} /> },
 ];
 

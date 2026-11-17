@@ -30,7 +30,7 @@ const BOTS: Bot[] = [
   { name: 'random', path: 'D', prefer: [], random: true },
   { name: 'random-all', path: 'D', prefer: [], random: true, alloc: 'random' },
   // Does the dial have a sweet spot? Same (safe) decisions, different splits. No fixed split should win everywhere.
-  ...(['A', 'B', 'C', 'D'] as PathId[]).flatMap((path): Bot[] =>
+  ...(['A', 'B', 'C', 'D', 'S'] as PathId[]).flatMap((path): Bot[] =>
     STRATEGIES.map(([strat, alloc]) => ({ name: `${path}:${strat}`, path, prefer: SAFE, alloc }))),
 ];
 
@@ -96,7 +96,7 @@ for (const bot of BOTS.filter((b) => !only || b.name === only)) {
 if (!only) {
   const strats = STRATEGIES.map(([n]) => n);
   console.log(`\n== win rate by steering ==\n  path  ${strats.map((n) => n.padStart(11)).join('')}   spread`);
-  for (const path of ['A', 'B', 'C', 'D']) {
+  for (const path of ['A', 'B', 'C', 'D', 'S']) {
     const row = strats.map((n) => wins[`${path}:${n}`] ?? 0);
     console.log(`  ${path}     ${row.map((w) => `${Math.round(w * 100)}%`.padStart(11)).join('')}   ${Math.round((Math.max(...row) - Math.min(...row)) * 100)}`);
   }

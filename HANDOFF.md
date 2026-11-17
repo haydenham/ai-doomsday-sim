@@ -21,7 +21,7 @@ Playable local prototype: a real-time, decision-driven strategy game about US AI
 
 **Owner playtest (2026-11-17):** lost Plan A to an AI takeover after the evals showed it failing alignment tests. "This is good." The owner accepts Plan C below target.
 
-**Latest sim after 5.1, 5.5 and 5.4 (Flourishing %, 300 seeds):**
+**Latest sim after 5.1, 5.5, 5.4 and the Plan S lift (Flourishing %, 300 seeds):**
 
 | Plan | Never touch the split | Reactive | Expert | Target (reactive / expert) |
 |---|---|---|---|---|
@@ -29,7 +29,7 @@ Playable local prototype: a real-time, decision-driven strategy game about US AI
 | B | 1 | 44 | 55 | 40–50 / ~70 |
 | C | 9 | 39 | 45 | accepted below target |
 | D | 0 | 25 | 41 | 20–30 / ~45 |
-| S | no bot yet | | | ~65 expert |
+| S | 0 | 30 | 32 | ~65 expert |
 
 **Audit:** 26 of 57 decisions still change the result by less than 3 points.
 
@@ -42,7 +42,7 @@ Work in this order. After each item, run `npm run typecheck && npm run build` an
 3. ~~5.5 Warning shots~~ ✅ done (`content/warnings.ts`). One recurring crisis (cooldown 3) from SAR − 0.4 on, rising through three rungs: sandbagging, an escape attempt, an unclaimed attack. Real chance = 12 × the summed takeover hazard (max 60%); false alarms = 1.5% + 0.3 × real. Real ones come from US, Chinese or open models in proportion to their hazard; intel ≥ 2 traces the source. Choices: **Pause and find it** (lead −4mo, prosperity −1%; if it's ours, alignment +4 and safety +0.5), **Lock it down** (security +1, compute growth −, trust −2), **Press on** (trust −3; if it's ours, alignment −2). The Reveal marks each as real or false, and the Loss of Control story tells the first and last warning and what they really were. **Measured (reactive):** Plan D ~0.8 warnings a run, 75% real; Plan A ~0.3 a run, all false alarms. B expert slipped again (59→55) and C expert 49→44, from pausing on false alarms.
 4. ~~5.4 The readout lies more~~ ✅ done. Bias = 7 × (cap − 7.5)^1.4 × (1 − alignment) × blur × max(0.45, 1 − 0.05 × safety) ÷ (1 + 1.5 × interp). General safety work cancels less of it than before, and each interpretability program (`c_interp`, now up to 2 uses, safety +1 each, sets `flags.interp`) cuts it sharply. The panel shows a range (readout ± sigma). **Measured at TED-AI:** readout − truth ≈ +1 with interpretability, +4 to +8 without (A/C), +11 on Plan D. Win rates didn't move: the sim's reactive bot doesn't read the readout under a deal, so this is felt by human players. A first try that also gave Plan B interpretability at +2 safety per use made every plan easier, so it was reverted.
 5. **5.6 Stricter endings.** A fast final climb needs more alignment margin, and Flourishing needs a minimum level of trust.
-6. **Plan S lift condition** (approved in SCENARIOS.md): pick a condition at the halt; safety work fills it; lifting early is a gamble. Add an S bot to `tools/sim.ts` and S to the audit.
+6. ~~Plan S lift condition~~ ✅ done (`content/lift.ts`). At the halt you pick one condition: **alignment solved** (safety 6; +10 alignment on lift), **lie detectors** (safety 6 and verification 4; on lift, interpretability ×2 and intel +2), or **smarter humans** (a 7-year clock; afterwards alignment erodes 40% slower). Verification now grows under a moratorium too. A "the halt" panel shows progress. When it's met, a "Condition met" event offers Lift slowly / Hold. The `s_lift` decision (from 2033, or earlier if China refused) is now the early lift: alignment −15 × the unmet share. S is in the sim's steering table and in the audit (`tools/audit.ts` PATHS). **Measured, reactive / expert, by condition:** solved 23/33, lies 30/27, humans 36/43; lifts land in 2036–38. **S expert is ~32% against a ~65% target.** Losses after the lift are China first (~20–25%) and takeovers (~25–39%); that's for a later balance pass.
 7. **C+ marker:** regulating during Plan C marks the run as C+.
 8. Later: 5.2 (keeping a deal is a fight), 5.7 (score per year), the rewires for decisions that do nothing (joint lab, secondary sanctions, AI dividend, backchannel, interpretability, destruction pledge), then Step 6, the interactive map.
 

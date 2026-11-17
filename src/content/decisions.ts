@@ -1,8 +1,9 @@
 import type { Choice, GameState, PathId, Phase } from '../sim/types';
-import { concentratePower, declareCovert, releaseOverhang, shiftStance, ticker, unlockComputeTier } from '../sim/helpers';
+import { concentratePower, shiftStance, ticker, unlockComputeTier } from '../sim/helpers';
 import { rand } from '../sim/rng';
 import { AC } from '../sim/constants';
 import { enforceAlloc } from '../sim/alloc';
+import { lift, liftProgress } from './lift';
 
 /**
  * A decision is the game's only verb. One at a time, the clock stops, the player picks.
@@ -459,13 +460,13 @@ export const DECISIONS: DecisionDef[] = [
     ],
   },
   {
-    id: 's_lift', title: 'The moratorium', phases: [3, 4], paths: ['S'], max: 3, weight: 3,
-    text: 'Lift it, slowly?',
-    when: (s) => !!s.flags.moratorium && (s.q >= 36 || s.cnPauseCap === null),
+    id: 's_lift', title: 'The moratorium', phases: [3, 4, 5], paths: ['S'], max: 3, weight: 3,
+    text: 'Lift it before the condition is met?',
+    // Pressure to lift early: years of stagnation, or a China that never joined.
+    when: (s) => !!s.flags.moratorium && liftProgress(s) < 1 && (s.q >= 24 || s.cnPauseCap === null),
     options: [
-      { label: 'Lift slowly', lean: 'race', chips: ['g:growth returns', 'h:'],
-        fx: { flags: { moratorium: false }, run: (s) => { releaseOverhang(s, 0.3); declareCovert(s); },
-          headline: 'The moratorium ends.', moment: 'You lifted the moratorium.' } },
+      { label: 'Lift anyway', lean: 'race', chips: ['g:growth returns', 'b:condition not met: a gamble', 'h:'],
+        fx: { run: lift, headline: 'The moratorium ends early.' } },
       { label: 'Hold', lean: 'safety', chips: ['b:trust −4'], fx: { add: { trust: -4 } } },
     ],
   },

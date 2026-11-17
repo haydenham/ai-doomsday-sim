@@ -6,6 +6,7 @@ import { AC, CN_EFFICIENCY, DEAL_RESUME_Q, TED_AI } from '../sim/constants';
 import { rand } from '../sim/rng';
 import { newNegotiation } from './negotiation';
 import { WARNING_SHOT } from './warnings';
+import { LIFT_EVENTS } from './lift';
 
 export interface EventDef {
   id: string;
@@ -403,6 +404,7 @@ export const EVENTS: EventDef[] = [
     ],
   },
   WARNING_SHOT,
+  ...LIFT_EVENTS,
   // ── Superintelligence ─────────────────────────────────────────────────
   {
     id: 'asi_keys', scheduledOnly: true, kind: 'ai',
