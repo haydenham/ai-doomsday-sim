@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "sim": "tsx tools/sim.ts",
-    "audit": "tsx tools/audit.ts"
+    "audit": "tsx tools/audit.ts",
+    "stories": "tsx tools/stories.ts"
   },
   "dependencies": {
     "react": "^18.3.1",

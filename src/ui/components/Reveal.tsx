@@ -2,8 +2,8 @@ import { useState } from 'react';
 import type { GameState } from '../../sim/types';
 import { ENDINGS } from '../../content/endings';
 import { AC, ALIGN_LOC, ASI, TED_AI, quarterLabel } from '../../sim/constants';
-import { takeoverStory } from '../../content/takeover';
-import { difficultyLabel, endingCause, peakCovert as peakCovertOf, pivotalDecision, score, shareText, timelineLabel, whatIfs } from '../../sim/reveal';
+import { endingStory } from '../../content/endingStory';
+import { difficultyLabel, peakCovert as peakCovertOf, pivotalDecision, score, shareText, timelineLabel, whatIfs } from '../../sim/reveal';
 import { game } from '../../store/game';
 import { randomSeed } from '../../sim/rng';
 import { sfx } from '../audio';
@@ -30,9 +30,7 @@ export function Reveal({ s }: { s: GameState }) {
       <div className="reveal-inner">
         <div className="modal-kind">{quarterLabel(s.endQ ?? s.q)} · The Reveal</div>
         <h1 className="reveal-title">{e.title}</h1>
-        {e.id === 'loc'
-          ? <div className="reveal-story">{takeoverStory(s).map((line, i) => <p key={i}>{line}</p>)}</div>
-          : <p className="reveal-epitaph">{endingCause(s)}{e.epitaph}</p>}
+        <div className="reveal-story">{endingStory(s).map((line, i) => <p key={i}>{line}</p>)}</div>
         <div className="reveal-score">
           <div><span className="counter-label">Cumulative prosperity</span><b>{moneyStr(s.cumGdp)}</b></div>
           <div><span className="counter-label">Ending multiplier</span><b>×{e.multiplier}</b></div>

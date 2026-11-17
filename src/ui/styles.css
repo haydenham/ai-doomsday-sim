@@ -169,10 +169,11 @@ input { font: inherit; }
 .reveal-flourishing .reveal-title { color: var(--good); }
 .reveal-gilded .reveal-title { color: var(--amber); }
 .reveal-cnfirst .reveal-title { color: var(--cn); }
-.reveal-epitaph { margin: 0 0 24px; max-width: 620px; }
 .reveal-story { margin: 0 0 24px; max-width: 620px; }
 .reveal-story p { margin: 0 0 10px; }
-.reveal-story p:last-child { color: var(--bad, inherit); }
+.reveal-story p:last-child { color: var(--bright); }
+.reveal-loc .reveal-story p:last-child, .reveal-cnfirst .reveal-story p:last-child { color: var(--bad); }
+.reveal-flourishing .reveal-story p:last-child { color: var(--good); }
 .reveal-score { display: flex; flex-wrap: wrap; gap: 8px 36px; margin-bottom: 30px; }
 .reveal-score > div { display: flex; flex-direction: column; }
 .reveal-score .counter-label { color: var(--dim); font-size: 12px; }

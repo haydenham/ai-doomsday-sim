@@ -17,7 +17,7 @@ Playable local prototype: a real-time, decision-driven strategy game about US AI
 - **Cut list started.**
 - **Step 5.3, China cheats for real:** the hidden datacenter is a real, less-aligned rival model; detection depends on spies, chip tracking and inspectors; four costly responses; breakout if ignored.
 - **Playtest fixes (2026-11-17):** the Deal panel shows the **ceiling**; the Treaty review popup explains it; "found by AI, not people" has a hint.
-- **Loss of Control tells the run's own takeover story** (`content/takeover.ts`): whose model, the warnings you had, how it got out, what it took.
+- **Every ending tells the run's own story** (`content/endingStory.ts`, shown on the Reveal): who and when, what led here (the run's decisions and moments, most important first, told in time order), how it happened, the world now. The epitaph in `endings.ts` is now the one-line close. Loss of Control keeps its takeover story. `npm run stories` prints samples per ending for proofreading.
 
 **Owner playtest (2026-11-17):** lost Plan A to an AI takeover after the evals showed it failing alignment tests. "This is good." The owner accepts Plan C below target.
 
@@ -37,12 +37,7 @@ Playable local prototype: a real-time, decision-driven strategy game about US AI
 
 Work in this order. After each item, run `npm run typecheck && npm run build` and `npm run sim`, then commit. Ask the owner before any **new** design choice that affects gameplay; the items below are already approved.
 
-1. **Ending stories for every ending** (owner: "I like that for the other endings as well"). Extend `content/takeover.ts` into `content/endingStory.ts`, assembled from the run's own state, and use it in `Reveal.tsx` for every ending, not just Loss of Control. Use the same shape: who and when, what led here (decisions and moments), how it happened, what the world looks like now.
-   - **Gilded Cage:** who holds power (nationalization, the agents in government, Plan B's war footing, the merger, power grabs) and how they got it.
-   - **Second Place:** how China got ahead (theft, the hidden datacenter, a collapsed deal, lost export controls) and what Beijing does with it.
-   - **Flourishing:** what went right: the deal, verification, the safety share, the AI dividend.
-   - **Cold War and Stagnation:** where things froze and why.
-   - The one-line epitaphs in `endings.ts` become the closing line.
+1. ~~Ending stories for every ending~~ ✅ done (see Status).
 2. **5.1 China adapts.** China's posture (cooperative, opportunistic or racing) moves with what you do: the lead, tension, sanctions, theft, how you treat the deal. The cheating chance already reads the posture. This is the biggest lever for bringing Plan A down to target.
 3. **5.5 Warning shots.** A rising series of incidents from the takeover risk: sandbagged evals, a model copying itself off a cluster, an unclaimed cyberattack. Some are false alarms, and each forces a costly choice (pause and lose lead, or press on). They should feed the ending story's "warnings" lines.
 4. **5.4 The readout lies more as capability grows.** Show a range instead of one number; interpretability is what keeps it honest.
@@ -60,6 +55,7 @@ npm install
 npm run dev            # http://localhost:5173  (?fast=4 speeds the clock 4×)
 npm run sim            # headless balance runner, 300 seeds per bot; prints milestone dates and AI 2040 rails checks
 npm run sim -- 150 planA   # one bot, verbose first run
+npm run stories        # prints sample ending stories per ending, to proofread
 npm run audit          # flips every decision across paired seeds on A/B/C/D; flags ones that change nothing (~10 min)
 npm run typecheck && npm run build
 ```
@@ -97,7 +93,7 @@ content/       data only
   decisions.ts ~45 decisions; each option has chips + fx + lean (race/safety/hawk/dove/people/power)
   events.ts    scripted/conditional events (also paused choices), incl. asi_keys, cn_breakout, unpause
   panels.ts    section unlock conditions; ladders.ts compute + algorithm tiers; paths.ts Plans A/B/C/D/S
-  takeover.ts  Loss of Control story built from the run (to grow into endingStory.ts)
+  endingStory.ts  the Reveal's story for every ending, built from the run; endings.ts epitaph closes it
   negotiation.ts  Plan A Geneva table; ticker.ts flavor + hidden-state hints; endings.ts
 store/game.ts  real-time loop and emit. Emits when blocked, which is the fix for the popup-not-showing bug.
 ui/            App.tsx (layout, ending sequence), sections.tsx (status/compute/world/... blocks),

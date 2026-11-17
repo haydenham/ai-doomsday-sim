@@ -51,15 +51,6 @@ export function whatIfs(s: GameState): string[] {
   return out.slice(0, 3);
 }
 
-/** One line on how the run was lost or won, prepended to the epitaph. */
-export function endingCause(s: GameState) {
-  if (s.takeover === 'us') return 'Your own AI took over before anyone reached superintelligence. ';
-  if (s.takeover === 'cn') return 'China\'s AI escaped its handlers and took over. ';
-  if (s.takeover === 'open') return 'An open model no one was watching took over. ';
-  if (s.asiBy === 'cn') return 'China reached superintelligence first. ';
-  return '';
-}
-
 export const peakCovert = (s: GameState) => Math.max(0, ...s.history.map((h) => h.covert));
 
 export const difficultyLabel = (d: number) => (d < 0.9 ? 'Easy' : d < 1.15 ? 'Normal' : 'Hard');
