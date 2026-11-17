@@ -8,6 +8,7 @@ import { applyFx, clamp, moment, ticker, unlockComputeTier } from './helpers';
 import { baseRdMult, capOf, covertCap, deployedAlgo, leadMonths } from './derived';
 import { LAB_ALLOC, capFactor, dealCapStrain, driftAlloc, fundingTarget, rawGrowth, safetyRate } from './alloc';
 import { HAWK_OF, updatePosture } from './china';
+import { isCPlus } from './reveal';
 import { alignCeiling, cnFrontierAlignment, takeoverRisks } from './risk';
 import { ALGO_TIERS } from '../content/ladders';
 import { PANELS } from '../content/panels';
@@ -217,6 +218,11 @@ function quarterBoundary(s: GameState) {
     s.cnAlignment += (s.alignment - s.cnAlignment) * (s.flags.jointLab ? 0.05 : 0.02);
   }
   updatePosture(s);
+  if (!s.flags.cPlus && isCPlus(s)) {
+    s.flags.cPlus = true;
+    ticker(s, 'With the new AI laws, Plan C becomes C+: the labs burn the lead under regulation.');
+    moment(s, 'Your regulations made this Plan C+.', 'decision');
+  }
 
   updateReadout(s);
   algoBreakthrough(s);

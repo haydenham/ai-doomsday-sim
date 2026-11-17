@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { game, useGame } from '../store/game';
 import type { GameState } from '../sim/types';
 import { quarterLabel } from '../sim/constants';
+import { planCode } from '../sim/reveal';
 import { isMuted, setMuted, sfx } from './audio';
 import { DecisionBox, ForkScreen, NegotiationBox, StartScreen } from './components/Overlays';
 import { Reveal } from './components/Reveal';
@@ -97,7 +98,7 @@ function TopBar({ s }: { s: GameState }) {
   return (
     <header className="topbar">
       <span className="brand">AI 2040</span>
-      <span className="date">{quarterLabel(s.q)}{s.path ? ` · plan ${s.path}` : ''}</span>
+      <span className="date">{quarterLabel(s.q)}{s.path ? ` · plan ${planCode(s)}` : ''}</span>
       {s.q >= 2 && <span className="timeline dim">2027 <span className="amber">{'━'.repeat(pos)}●</span>{'─'.repeat(W - 1 - pos)} 2040</span>}
       <span className="controls">
         <button className={game.paused ? 'on' : ''} onClick={() => { sfx.click(); game.togglePause(); }} title="pause (space)">{game.paused ? '▶' : '❚❚'}</button>

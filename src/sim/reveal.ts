@@ -51,6 +51,24 @@ export function whatIfs(s: GameState): string[] {
   return out.slice(0, 3);
 }
 
+/** Regulating choices (decision id → option label) that turn Plan C into C+ (AI 2040: domestic regulation). */
+const REGULATIONS: Record<string, string> = {
+  cap_rd: 'Cap at 25%', internal_models: 'Ban the gap', transparency: 'Pass it', permits: 'Normal review',
+};
+const C_PLUS_MIN = 2;
+
+/** Plan C becomes C+ once you pass at least two regulations after the Fork. A marker, not a mechanic. */
+export function isCPlus(s: GameState) {
+  if (s.path !== 'C') return false;
+  const fork = s.decisions.find((d) => d.id.startsWith('fork_'));
+  if (!fork) return false;
+  const n = s.decisions.filter((d) => d.q >= fork.q && REGULATIONS[d.id] && d.label.endsWith(`: ${REGULATIONS[d.id]}`)).length;
+  return n >= C_PLUS_MIN;
+}
+
+/** "C+" for a regulated Plan C, otherwise the path letter. */
+export const planCode = (s: GameState) => (s.flags.cPlus ? 'C+' : s.path ?? '');
+
 export const peakCovert = (s: GameState) => Math.max(0, ...s.history.map((h) => h.covert));
 
 export const difficultyLabel = (d: number) => (d < 0.9 ? 'Easy' : d < 1.15 ? 'Normal' : 'Hard');
@@ -63,7 +81,7 @@ export function score(s: GameState) {
 export function shareText(s: GameState) {
   const e = ENDINGS[s.ending!];
   const sc = score(s);
-  const path = s.path ? `Plan ${s.path}, ${pathDef(s.path).name}` : 'No path';
+  const path = s.path ? `Plan ${planCode(s)}, ${pathDef(s.path).name}${s.flags.cPlus ? ', regulated' : ''}` : 'No path';
   return [
     `AI 2040 | ${e.title}`,
     `Score: $${sc >= 1000 ? (sc / 1000).toFixed(1) + 'Q' : sc.toFixed(0) + 'T'} | Hidden alignment: ${Math.round(s.alignment)}%`,
