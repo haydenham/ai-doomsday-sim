@@ -1,7 +1,7 @@
 import type { Choice, Fx, GameState, PendingEvent } from '../sim/types';
 import { concentratePower, declareCovert, moment, releaseOverhang, shiftStance, ticker } from '../sim/helpers';
 import { enforceAlloc, labPreference, theftRisk } from '../sim/alloc';
-import { deployedAlgo, leadMonths } from '../sim/derived';
+import { covertCap, deployedAlgo, leadMonths } from '../sim/derived';
 import { AC, CN_EFFICIENCY, DEAL_RESUME_Q, TED_AI } from '../sim/constants';
 import { rand } from '../sim/rng';
 import { newNegotiation } from './negotiation';
@@ -217,14 +217,40 @@ export const EVENTS: EventDef[] = [
     id: 'cn_covert_found', once: false, cooldown: 6, kind: 'crisis',
     // Only meaningful while there's a deal or moratorium for China to be cheating on.
     when: (s) => (s.dealActive || !!s.flags.moratorium) && s.covert > s.cnRaw * 0.05,
-    chance: (s) => 0.03 + 0.04 * s.intel + 0.03 * s.verification + (s.flags.chipTracking ? 0.06 : 0),
+    // Finding it depends on what you built before it started: spies, inspectors, chip tracking.
+    chance: (s) => 0.01 + 0.06 * s.intel + 0.012 * s.verification + (s.flags.chipTracking ? 0.06 : 0),
     title: 'Hidden datacenter',
-    body: (s) => `Satellites find ${(s.covert / 1e6).toFixed(1)} million undeclared chips in Xinjiang.`,
+    body: (s) => `Satellites find ${(s.covert / 1e6).toFixed(1)} million undeclared chips in Xinjiang.${covertCap(s) >= s.cnCap - 0.05 ? ' Its model is past the treaty cap.' : ''}`,
     choices: (s): Choice[] => [
-      { label: 'Confront Beijing', lean: 'hawk', chips: ['g:covert −70%', 'b:tension +15', ...(s.dealActive ? ['b:deal −10'] : [])],
-        fx: { mul: { covert: 0.3 }, add: { tension: 15, dealIntegrity: s.dealActive ? -10 : 0 }, flags: { cnCovertKnown: true } } },
-      { label: 'Build our own', lean: 'race', chips: ['g:compute ×1.4', 'b:power +8', 'b:if found: disaster'],
-        fx: { mul: { raw: 1.4 }, add: { powerConc: 8 }, flags: { usCovert: true, cnCovertKnown: true },
+      { label: 'Confront Beijing', lean: 'hawk', chips: ['g:shut down', 'n:they may move it', 'b:tension +15', ...(s.dealActive ? ['b:deal −10'] : [])],
+        fx: { add: { tension: 15, dealIntegrity: s.dealActive ? -10 : 0 }, flags: { cnCovertKnown: true },
+          run: (st) => {
+            // A cheater that means it denies everything and moves the chips.
+            if (rand(st) < (st.intent === 'racing' ? 0.5 : 0.3)) {
+              st.covert *= 0.8;
+              ticker(st, 'Beijing denies everything. The site goes dark. Analysts think the chips were moved.', 'warn');
+            } else {
+              st.covert = 0;
+              ticker(st, 'Beijing admits to "a research facility" and shuts it down.', 'good');
+            }
+          } } },
+      { label: 'Sabotage it', lean: 'hawk', chips: ['g:covert −80%', 'b:tension +8', 'b:if caught: deal −20'],
+        fx: { mul: { covert: 0.2 }, add: { tension: 8 }, flags: { cnCovertKnown: true },
+          run: (st) => {
+            if (rand(st) < 0.35) {
+              st.tension = Math.min(100, st.tension + 20);
+              if (st.dealActive) st.dealIntegrity = Math.max(0, st.dealIntegrity - 20);
+              ticker(st, 'Beijing accuses the CIA of sabotaging "a steel plant." It has proof.', 'warn');
+              moment(st, 'Your sabotage of China\'s secret datacenter was traced back to you.', 'danger');
+            } else ticker(st, 'A transformer fire shuts down a "steel plant" in Xinjiang.');
+          } } },
+      ...(s.flags.macd ? [{ label: 'Destroy it', lean: 'hawk' as const, chips: ['g:covert gone', 'b:tension +15'],
+        fx: { add: { tension: 15 }, flags: { cnCovertKnown: true },
+          run: (st: GameState) => { st.covert = 0; ticker(st, 'Under the pledge, the secret datacenter is destroyed. Beijing does not object.', 'good'); },
+          moment: 'You destroyed China\'s secret datacenter under the destruction pledge.' } }] : []),
+      { label: 'Build our own', lean: 'race', chips: ['g:compute ×1.4', 'b:power +8', 'b:if found: disaster', 'h:'],
+        // A secret run skips the safety work too.
+        fx: { mul: { raw: 1.4 }, add: { powerConc: 8, alignment: -8 }, flags: { usCovert: true, cnCovertKnown: true },
           moment: 'You answered China\'s covert project with one of your own.' } },
     ],
   },
@@ -293,7 +319,8 @@ export const EVENTS: EventDef[] = [
   },
   {
     id: 'cn_breakout', kind: 'crisis',
-    when: (s) => s.dealActive && s.covert > s.cnRaw * 0.3, chance: 0.2,
+    // The secret model has passed the treaty cap and China stops hiding it.
+    when: (s) => s.dealActive && s.pauseCap !== null && covertCap(s) > s.pauseCap + 0.3, chance: 0.35,
     title: 'Breakout',
     body: 'China reveals a model far past the treaty cap. Trained in secret.',
     choices: [

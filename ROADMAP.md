@@ -385,6 +385,20 @@ Per-plan scenarios, failure modes, targets and cut list are in `SCENARIOS.md` (d
    - **It grows fast enough to matter:** ignore it and a breakout really happens.
    - **China cheats more when you give it reasons:** you fall behind on verification, tension is high, or its posture hardens (item 1).
    - **Target:** on Plan A with little intel or verification, about half of the runs where China cheats are lost.
+   - ✅ **Built (2026-11-17):**
+     - **The secret run is its own model** (`covertCap`): covert chips × China's algorithms × 0.3 (scattered sites train badly). It becomes China's frontier once it passes the declared model, but it climbs at most 0.3 capability per quarter.
+     - **It's less aligned:** its alignment is China's minus 20, for takeover risk and for the ending.
+     - **China cheats more** at high tension (×(1 + tension/100)) and when verification is under 2 (×1.5).
+     - **Detection:** 1% + 6% per intel + 1.2% per verification + 6% with chip tracking, per quarter.
+     - **Responses:**
+       - Confront: China admits and shuts it down, or (30%, 50% if racing) denies and moves it (−20%).
+       - Sabotage: −80%, but a 35% chance it's traced back to you (tension +20, deal −20).
+       - Destroy it: only under the destruction pledge.
+       - Build our own: now costs alignment −8.
+     - **Breakout:** when the secret model is 0.3 past the treaty ceiling (35% per quarter).
+     - **Measured (Plan A, 300 seeds):** China cheats in 57% of runs. A reactive player wins 80% of those, and a player who leaves the split to the labs wins 43%. Plan A win rates went from 70/98/97% to 56/88/85% (never touch / reactive / expert).
+     - **Full audit:** decisions with no effect fell from 30 of 57 to 26. Share research and the pledge sit right at the 3-point line.
+     - **Audit (Plan A swings):** Hidden-datacenter response 19, Breakout 10, Inspectors 8, Chip tracking 7, Spy budget 3, Destruction pledge 3, Share safety research 3.
 4. **The readout lies more as models get smarter.** Deceptive bias grows with capability faster than general safety work shrinks it. Only interpretability (a decision line, or a fifth use of compute) keeps the readout honest late. The readout shows a range rather than one number, so the player decides under real uncertainty.
 5. **Warning shots: the visible steps toward a takeover (Step 4, item 3b).** An escalating ladder of ambiguous incidents: a model sandbagging its evals, then an agent copying itself off a lab cluster, then an AI-enabled cyberattack nobody claims. They come from the same hazard, so more of them means real danger. Some are false alarms, though, and each one forces a costly response (pause and lose lead, or press on). Incidents can come from China's or open models too, and you can't always tell whose.
 6. **Endings get stricter.** The alignment needed at superintelligence depends on how fast the final climb was: a fast takeoff needs more margin than a slow one. Flourishing also needs trust above a floor, because a public that rejects the transition doesn't get flourishing.

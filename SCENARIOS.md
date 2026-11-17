@@ -223,6 +223,8 @@ Proposed: **cut** old chips, AI medicine and AI in government; **merge** chip tr
 - AI dividend → trust, which now decides elections;
 - the destruction pledge → the secret-datacenter chain.
 
+**2026-11-17:** ✅ Plan C may stay below its target (owner). ✅ Step 5.3 (China cheats for real) gives spy budget, chip tracking, the destruction pledge, inspectors and share research a real effect on Plan A (see ROADMAP). Still to rewire: the joint lab (now changes the score, not the win rate), secondary sanctions, AI dividend, backchannel.
+
 **Progress (2026-11-16):** ✅ cut AI in government, AI medicine and old chips. ✅ Old chips merged into chip tracking instead of export controls: tracking now covers resold chips, costs 0.5% prosperity, and cuts China's odds of starting covert compute to 0.4× (was 0.6×, plus 0.5× from old chips). ✅ Power for AI is gated to Q4+ and the Arctic pact to Q6+ for a slower reveal. Audit: 58 → 55 decisions, 34 → 32 with no effect. ⏳ The rewires above are still to do.
 
 ## Owner decisions (2026-11-16)

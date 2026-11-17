@@ -1,6 +1,7 @@
 import type { GameState } from './types';
 import { ASI, SAR } from './constants';
 import { clamp } from './helpers';
+import { covertCap } from './derived';
 
 // AI takeover: a misaligned model that can do AI research can also copy itself out, hide, and act.
 // From Superhuman AI Researcher on, every frontier model carries a quarterly risk, not just the one at superintelligence.
@@ -24,9 +25,14 @@ export const usContainment = (s: GameState) => 0.08 * s.security;
 /** China's labs run tight control on their models; inspections under a deal add a little. */
 export const cnContainment = (s: GameState) => 0.3 + (s.dealActive ? 0.1 : 0);
 
+/** The model at China's frontier. A secret run, trained with no safety work, is far less aligned. */
+export const cnFrontierAlignment = (s: GameState) =>
+  s.covert > 0 && covertCap(s) >= s.cnCap - 0.05 ? clamp(s.cnAlignment - COVERT_ALIGN_PENALTY, 0, 100) : s.cnAlignment;
+const COVERT_ALIGN_PENALTY = 20;
+
 export function takeoverRisks(s: GameState) {
   const us = takeoverHazard(s.alignment, s.cap, usContainment(s));
-  const cn = takeoverHazard(s.cnAlignment, s.cnCap, cnContainment(s));
+  const cn = takeoverHazard(cnFrontierAlignment(s), s.cnCap, cnContainment(s));
   // Published research lets anyone train near-frontier models, with no safety team and no containment.
   const open = s.openness > 0
     ? (s.openness / 10) * takeoverHazard(Math.min(s.alignment, s.cnAlignment) - 10, Math.max(s.cap, s.cnCap) - 0.5, 0)

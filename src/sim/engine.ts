@@ -5,9 +5,9 @@ import {
 } from './constants';
 import { chance, gauss, pick, rand, range, weighted } from './rng';
 import { applyFx, clamp, moment, ticker, unlockComputeTier } from './helpers';
-import { baseRdMult, capOf, deployedAlgo, leadMonths } from './derived';
+import { baseRdMult, capOf, covertCap, deployedAlgo, leadMonths } from './derived';
 import { LAB_ALLOC, capFactor, dealCapStrain, driftAlloc, fundingTarget, rawGrowth, safetyRate } from './alloc';
-import { alignCeiling, takeoverRisks } from './risk';
+import { alignCeiling, cnFrontierAlignment, takeoverRisks } from './risk';
 import { ALGO_TIERS } from '../content/ladders';
 import { PANELS } from '../content/panels';
 import { COUNTRIES } from '../content/countries';
@@ -22,6 +22,8 @@ export const SUBSTEP = 0.01; // quarters per simulation substep (small so counte
 // A 40× research speedup doesn't mean 40× progress: experiments still need compute.
 const RD_ELASTICITY = 0.9;
 const ALGO_BASE = 0.024;
+/** Capability per quarter a secret run can add above China's declared model. */
+const COVERT_CLIMB = 0.3;
 
 export function newGame(seed: number): GameState {
   const s = { rngState: seed } as GameState;
@@ -142,9 +144,12 @@ function advance(s: GameState, dt: number) {
   if (s.covert > 0) s.covert *= Math.pow(1.12, dt);
   const cnCapRaw = capOf(s.cnRaw, s.cnAlgo);
   const declared = s.cnPauseCap !== null ? Math.min(cnCapRaw, s.cnPauseCap) : cnCapRaw;
-  const cnTarget = declared + (s.covert > 0 ? Math.log10(1 + s.covert / s.cnRaw) : 0);
+  // The secret run is its own model. Once it passes the declared one, it is China's frontier.
+  const cnTarget = Math.max(declared, covertCap(s));
   // Under a deal both sides lift the cap at the same agreed pace.
-  const cnRate = s.dealActive ? s.overhangRate : 1;
+  // A secret run past the declared model trains slowly: hidden sites, smuggled chips, no big interconnect.
+  const secretRun = covertCap(s) > declared && s.cnCap >= declared - 0.01;
+  const cnRate = secretRun ? COVERT_CLIMB : s.dealActive ? s.overhangRate : 1;
   const prevCn = s.cnCap;
   s.cnCap = cnTarget > s.cnCap ? Math.min(cnTarget, s.cnCap + cnRate * dt) : cnTarget;
   s.cnCapRate += ((s.cnCap - prevCn) / dt - s.cnCapRate) * Math.min(1, 2 * dt);
@@ -295,8 +300,9 @@ function chinaActs(s: GameState) {
   // Covert compute means cheating on a deal or moratorium; smuggling under export controls is the cnRaw leak below.
   const rulesToBreak = s.dealActive || !!s.flags.moratorium;
   if (s.covert === 0 && s.intent !== 'cooperative' && rulesToBreak && s.q >= 10) {
+    // China cheats more when tension is high and when there is little to catch it with.
     const p = (s.intent === 'racing' ? 0.22 : 0.1) * (s.flags.chipTracking ? 0.4 : 1)
-      * (s.flags.macd ? 0.5 : 1);
+      * (s.flags.macd ? 0.5 : 1) * (1 + s.tension / 100) * (s.verification < 2 ? 1.5 : 1);
     if (chance(s, p)) {
       s.covert = s.cnRaw * 0.08;
       moment(s, 'China began a covert compute project, hidden under a "steel plant" in Xinjiang.', 'hidden');
@@ -611,7 +617,7 @@ function checkEnding(s: GameState) {
 export function determineEnding(s: GameState): EndingId {
   if (s.takeover) return 'loc';
   if (s.asiBy === 'us') return s.alignment < ALIGN_LOC ? 'loc' : s.powerConc >= POWER_GILDED ? 'gilded' : 'flourishing';
-  if (s.asiBy === 'cn') return s.cnAlignment < ALIGN_LOC ? 'loc' : 'cnfirst';
+  if (s.asiBy === 'cn') return cnFrontierAlignment(s) < ALIGN_LOC ? 'loc' : 'cnfirst';
   return (s.path === 'S' && s.flags.moratorium) || s.cap < SAR ? 'stagnation' : 'coldwar';
 }
 

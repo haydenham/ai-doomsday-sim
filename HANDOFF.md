@@ -18,7 +18,9 @@ Playable local prototype: a real-time, decision-driven strategy game about US AI
   - Weight theft fixed.
   - Cut list started.
 
-  Next: cut-list rewires, Plan C balance (expert 49%, target ~70%), then the rest of Step 5.
+  - Step 5.3, China cheats for real (2026-11-17).
+
+  Plan C below target is accepted by the owner. Next: the owner's playthroughs, then the rest of Step 5 (adaptive China, the readout lies more, warning shots, stricter endings, the Plan S lift condition, the C+ marker).
 
 ## Run
 

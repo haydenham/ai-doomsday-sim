@@ -19,6 +19,13 @@ export function baseRdMult(cap: number) {
 /** The algorithmic efficiency of the model actually deployed (excludes research a pause or treaty holds back). */
 export const deployedAlgo = (s: GameState) => Math.min(s.algo, Math.pow(10, s.cap + CAP_OFFSET) / s.raw);
 
+/**
+ * China's secret training run: covert chips with China's algorithms, above any treaty ceiling.
+ * Hidden, scattered sites can't train like one national cluster, so each chip counts for less.
+ */
+export const COVERT_EFFICIENCY = 0.3;
+export const covertCap = (s: GameState) => (s.covert > 0 ? capOf(s.covert * COVERT_EFFICIENCY, s.cnAlgo) : -Infinity);
+
 export const effectiveCompute = (s: GameState) => s.raw * s.algo;
 
 /** Parallel AI researcher copies (flavor stat for the Intelligence panel). */
