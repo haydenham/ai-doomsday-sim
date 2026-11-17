@@ -180,7 +180,16 @@ Proposed: **cut** old chips, AI medicine and AI in government; **merge** chip tr
 - AI dividend → trust, which now decides elections;
 - the destruction pledge → the secret-datacenter chain.
 
-## Open questions for the owner
+## Owner decisions (2026-11-16)
+
+1. ✅ Plan B is redefined to AI 2040's "sabotage, then spend the lead", with a cyber/kinetic doctrine.
+2. ✅ Plans are ordered by AI 2040: expert A ~80%, B/C ~70%, S ~65%, D ~45%.
+3. ✅ One Plan C; regulating during it makes it C+.
+4. ✅ Plan S gets a lift condition chosen at the halt, filled by safety work.
+5. ⏳ Gilded Cage on Plan C: default is to treat it as a bug and investigate.
+6. ⏳ Emergent paths: default is to keep the Fork menu until after Step 5.
+
+## Open questions for the owner (original)
 
 1. **Plan B:** redefine it to AI 2040's "sabotage, then spend the lead on safety", with a cyber/kinetic doctrine choice?
 2. **Plan order:** should expert play still differ across plans, with D clearly worst and A best, per the targets above?
