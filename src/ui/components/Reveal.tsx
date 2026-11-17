@@ -23,13 +23,12 @@ export function Reveal({ s }: { s: GameState }) {
   const sc = score(s);
   const share = shareText(s);
   const momentMarkers = s.moments.filter((m) => m.kind === 'hidden' || m.kind === 'danger').map((m) => ({ x: m.q, label: m.text, tone: m.kind }));
-  const china = s.asiBy === 'cn';
 
   return (
     <div className={`reveal reveal-${e.id}`}>
       <div className="reveal-inner">
         <div className="modal-kind">{quarterLabel(s.endQ ?? s.q)} · The Reveal</div>
-        <h1 className="reveal-title">{e.title}{china && e.id !== 'loc' ? ' (Beijing)' : ''}</h1>
+        <h1 className="reveal-title">{e.title}</h1>
         <p className="reveal-epitaph">{endingCause(s)}{e.epitaph}</p>
         <div className="reveal-score">
           <div><span className="counter-label">Cumulative prosperity</span><b>{moneyStr(s.cumGdp)}</b></div>

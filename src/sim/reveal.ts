@@ -44,6 +44,8 @@ export function whatIfs(s: GameState): string[] {
   if (s.takeover === 'cn') out.push('China\'s model escaped. Sharing alignment research, or a deal with a joint safety lab, would have made it safer.');
   if (s.asiBy === 'cn') out.push('China got there first. Securing the labs or holding export controls would have kept your lead.');
   if (s.powerConc >= 60 && s.ending === 'gilded') out.push('The AI was aligned, but with very few people. Open research and an AI dividend spread power out.');
+  if (s.path === 'B' && s.ending === 'loc') out.push('The campaign bought you a lead, and you spent it on capabilities. Plan B only works if the time goes to safety.');
+  if (s.path === 'B' && s.ending === 'gilded') out.push('The war footing never ended. Standing down the campaign sooner would have handed power back.');
   if (s.path === 'S' && s.ending === 'stagnation') out.push('The moratorium held, and so did the economy. Lifting it slowly, late, might have worked.');
   if (s.algoTier >= 6 && s.safety < 3) out.push('Once models started thinking in vectors instead of words, your evals got much blurrier. Interpretability work offsets that.');
   return out.slice(0, 3);

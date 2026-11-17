@@ -9,7 +9,7 @@ import type { PathId } from '../src/sim/types';
 import { SAFE, runOne } from './bots';
 
 const runs = Number(process.argv[2] ?? 150);
-const PATHS: PathId[] = ['A', 'C', 'D'];
+const PATHS: PathId[] = ['A', 'B', 'C', 'D'];
 /** A decision that moves win rate by less than this on every path does nothing worth a pause. */
 const THRESHOLD = 0.03;
 

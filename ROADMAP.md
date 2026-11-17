@@ -356,6 +356,8 @@ Also: 23 of 34 decisions on Plan A make no measurable difference (playtest #6). 
 
 ## Step 4.5. Scenario drawing board (in progress)
 
+**Progress (2026-11-16):** cut list started. Plan B rebuilt as "Sabotage, then Spend". New ending **Second Place** when China's aligned ASI arrives first. **Bug fixed:** weight theft never applied China's 5× efficiency factor, so a theft barely moved the lead (−2 months on ~20). Now a theft takes ~9 months, per Step 4's "the lead vanishes overnight". Expert win rates after these changes: A 99%, B 69%, C 49% (was 65%; the theft fix hit it hardest, and it's now below the ~70% target), D 44%.
+
 Per-plan scenarios, failure modes, targets and cut list are in `SCENARIOS.md` (draft, 2026-11-16). AI 2040's "Comparing Possible Plans" supplement turns out to define B, C, D and S. Open owner questions are listed at the bottom of that file. Step 5 waits on the answers.
 
 ---

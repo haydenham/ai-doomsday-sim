@@ -1,7 +1,7 @@
 export type PathId = 'A' | 'B' | 'C' | 'D' | 'S';
 export type Phase = 1 | 2 | 3 | 4 | 5;
 export type Intent = 'cooperative' | 'opportunistic' | 'racing';
-export type EndingId = 'flourishing' | 'gilded' | 'stagnation' | 'coldwar' | 'loc';
+export type EndingId = 'flourishing' | 'gilded' | 'cnfirst' | 'stagnation' | 'coldwar' | 'loc';
 
 /** Numeric state fields that content may add to directly. */
 export type NumKey =

@@ -319,6 +319,19 @@ export const DECISIONS: DecisionDef[] = [
     ],
   },
   {
+    id: 'b_standdown', title: 'Stand down', phases: POST, paths: ['B'], max: 3, weight: 3,
+    text: 'The campaign has bought time. End it?',
+    when: (s) => !!s.flags.bCampaign && s.q >= 12,
+    options: [
+      { label: 'Stand down', lean: 'dove', chips: ['g:tension −20', 'g:trust +4', 'b:China recovers'],
+        fx: { add: { tension: -20, trust: 4 }, flags: { bCampaign: false },
+          headline: 'The President ends the campaign against China. Beijing calls it "a first step."',
+          moment: 'You ended the campaign against China.' } },
+      { label: 'Keep pressing', lean: 'hawk', chips: ['g:China compute −10%', 'b:tension +8', 'b:power +4'],
+        fx: { mul: { cnRaw: 0.9 }, add: { tension: 8, powerConc: 4 } } },
+    ],
+  },
+  {
     id: 'b_sanctions', title: 'Secondary sanctions', phases: POST, paths: ['B'],
     text: 'Punish any country that sells chips to China.',
     options: [

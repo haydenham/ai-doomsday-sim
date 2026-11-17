@@ -1,6 +1,6 @@
 import type { EndingId, GameState, Intent, PathId, Snapshot } from './types';
 import {
-  AC, ALIGN_LOC, ASI, DEAL_CEILING, DEAL_RESUME_Q, END_Q, FORK_Q, PHASE_NAMES, POWER_GILDED, RECKONING_Q, SAR,
+  AC, ALIGN_LOC, ASI, CN_EFFICIENCY, DEAL_CEILING, DEAL_RESUME_Q, END_Q, FORK_Q, PHASE_NAMES, POWER_GILDED, RECKONING_Q, SAR,
   TAKEOFF_Q, UNPAUSE_Q,
 } from './constants';
 import { chance, gauss, pick, rand, range, weighted } from './rng';
@@ -19,9 +19,6 @@ import { EXTRA_TERM_COST, MAX_ROUNDS, NEGOTIATION_ITEMS, RED_LINE_STRAIN, REJECT
 
 export const SUBSTEP = 0.01; // quarters per simulation substep (small so counters tick smoothly)
 
-// China runs one national project on most of its chips and fast-follows US algorithms (theft, distillation),
-// so a Chinese chip counts for more at the frontier than a US chip split across rival labs.
-const CN_EFFICIENCY = 5;
 // A 40× research speedup doesn't mean 40× progress: experiments still need compute.
 const RD_ELASTICITY = 0.9;
 const ALGO_BASE = 0.024;
@@ -132,6 +129,7 @@ function advance(s: GameState, dt: number) {
   // China
   const desperation = cnDesperation(s);
   let cnRawG = 0.045 + 0.03 * desperation - 0.015 * s.exportControls + (s.cnCap >= SAR ? 0.04 : 0);
+  if (s.flags.bCampaign) cnRawG -= s.flags.kinetic ? 0.03 : 0.018; // Plan B: sabotage, sanctions, strikes
   if (s.cnPauseCap !== null && s.flags.moratorium) cnRawG = Math.min(cnRawG, 0.01);
   s.cnRaw *= Math.pow(1 + cnRawG, dt);
   s.cnRdMult = baseRdMult(s.cnCap) * (s.intent === 'racing' ? 1.1 : 1);
@@ -195,6 +193,12 @@ function quarterBoundary(s: GameState) {
   s.tension = clamp(s.tension - 2 + cnDesperation(s) * 3, 0, 100);
   const pcDrift = (s.cap >= AC ? 0.5 : 0) * (s.path === 'B' || s.path === 'D' ? 1.6 : 1) - 0.12 * s.openness;
   s.powerConc = clamp(s.powerConc + pcDrift, 0, 100);
+
+  // Plan B's campaign: tension climbs, and a wartime public trusts you less the longer it lasts.
+  if (s.flags.bCampaign) {
+    s.tension = clamp(s.tension + (s.flags.kinetic ? 3 : 1.5), 0, 100);
+    s.trust = clamp(s.trust - 0.4, 0, 100);
+  }
 
   chinaActs(s);
 
@@ -264,7 +268,8 @@ function updatePhase(s: GameState) {
 }
 
 function updateReadout(s: GameState) {
-  const blur = s.algoTier >= 6 ? 1.3 : 1;
+  // Neuralese blurs the evals; so does wartime secrecy under Plan B's campaign.
+  const blur = (s.algoTier >= 6 ? 1.3 : 1) * (s.flags.bCampaign ? 1.15 : 1);
   const sigma = (24 / (1 + 0.45 * s.safety + 0.25 * s.verification)) * blur;
   // Capable, misaligned models learn to look aligned. Safety work shrinks the gap.
   const bias = s.cap > 7.5 ? (s.cap - 7.5) * 9 * (1 - s.alignment / 100) * blur * Math.max(0.25, 1 - 0.07 * s.safety) : 0;
@@ -426,8 +431,10 @@ export function chooseFork(s: GameState, path: PathId) {
       ticker(s, 'New doctrine: stay ahead, and spend every month of the lead on making AI safe.');
       break;
     case 'B':
-      s.exportControls += 1; s.tension = clamp(s.tension + 20, 0, 100); s.powerConc += 10; s.security += 2; s.cnRaw *= 0.85;
-      ticker(s, 'The President declares AI "the defining conflict of our time." Sanctions on Chinese chipmakers take effect at midnight.');
+      s.exportControls += 1; s.tension = clamp(s.tension + 10, 0, 100); s.security += 1;
+      s.flags.bCampaign = true;
+      ticker(s, 'The President orders a campaign to slow China\'s AI program. Sanctions take effect at midnight.');
+      fireEvent(s, EVENT_BY_ID['b_doctrine']);
       break;
     case 'A':
       s.negotiation = newNegotiation(s);
@@ -604,7 +611,7 @@ function checkEnding(s: GameState) {
 export function determineEnding(s: GameState): EndingId {
   if (s.takeover) return 'loc';
   if (s.asiBy === 'us') return s.alignment < ALIGN_LOC ? 'loc' : s.powerConc >= POWER_GILDED ? 'gilded' : 'flourishing';
-  if (s.asiBy === 'cn') return s.cnAlignment < ALIGN_LOC ? 'loc' : 'gilded';
+  if (s.asiBy === 'cn') return s.cnAlignment < ALIGN_LOC ? 'loc' : 'cnfirst';
   return (s.path === 'S' && s.flags.moratorium) || s.cap < SAR ? 'stagnation' : 'coldwar';
 }
 

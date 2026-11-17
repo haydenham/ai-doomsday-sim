@@ -33,10 +33,10 @@ export const PATHS: PathDef[] = [
     },
   },
   {
-    id: 'B', code: 'PLAN B', name: 'Fight China',
-    oneLine: 'Sabotage, sanctions, and pressure. Make sure they never get there.',
-    body: 'Treat the race as a conflict. Slow China down by any means, and centralize control at home to do it.',
-    feel: 'Your lead grows, and so do tension and the power of a few people.',
+    id: 'B', code: 'PLAN B', name: 'Sabotage, then Spend',
+    oneLine: 'Break China\'s momentum. Spend the time you buy on safety.',
+    body: 'Cyberattacks, sanctions, maybe strikes. China slows and your lead grows. Then you have to use it.',
+    feel: 'Every month you buy costs tension, trust and freedom. Waste it, and it was all for nothing.',
     available: () => ({ ok: true }),
   },
   {

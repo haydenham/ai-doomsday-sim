@@ -83,7 +83,30 @@ Other points from the page:
 - **Escalation:** Taiwan or war (a new hard ending, or a trust and compute collapse).
 - **The Gilded Cage:** the war footing never ends, and power stays concentrated.
 
-**Today:** the fight bot loses 99% (it never spends the lead). No Plan B bot exists in the steering table, and the audit doesn't cover B.
+**Built (2026-11-16):**
+- The Fork starts the campaign (export controls +1, tension +10), then asks for a **doctrine**:
+  - Cyber: China's chips −15%, tension +10.
+  - Kinetic: chips −30% and its algorithms −10%; tension +30, trust −4, power to 45+. Beijing blinks less in a Taiwan crisis, and a skirmish hurts 1.6× more.
+- While the campaign runs:
+  - China's chips grow 1.8 points per quarter slower (3 under kinetic).
+  - Tension rises 1.5 per quarter (3 under kinetic), and trust falls 0.4.
+  - The readout is 15% blurrier (wartime secrecy).
+- **Stand down** (from 2030, up to 3 times): end the campaign for tension −20 and trust +4, or keep pressing (China's chips −10%, tension +8, power +4). A lost election ends the campaign.
+- Once the lead reaches 3 months, B gets C's halved lab pull.
+- Reveal lines for a wasted lead and a war footing that never ended.
+
+**Sim (300 seeds):**
+
+| Steering | Win rate | Target |
+|---|---|---|
+| Leave the split to the labs | 0% | 5–15% |
+| Balanced split | 31% | |
+| Reactive | 53% | 40–50% |
+| Expert | 69% | ~70% |
+
+The fight bot still loses 99%, because it never spends the lead. That's the intended way to lose B. The reactive bot with the kinetic doctrine wins 56%.
+
+**Audit, Plan B column:** Defense Production Act 12, Weights stolen 11, Cyberattack 6, Stand down 5, Taiwan 5, Emergency powers 5, Doctrine 3. Secondary sanctions does nothing (1); rewire it.
 
 **Content:**
 - Keep: Cyberattack, Sanctions, Taiwan, Emergency powers, DPA.
@@ -208,7 +231,7 @@ Proposed: **cut** old chips, AI medicine and AI in government; **merge** chip tr
 2. ✅ Plans are ordered by AI 2040: expert A ~80%, B/C ~70%, S ~65%, D ~45%.
 3. ✅ One Plan C; regulating during it makes it C+.
 4. ✅ Plan S gets a lift condition chosen at the halt, filled by safety work.
-5. ⏳ Gilded Cage on Plan C: investigated. `npm run sim` now reports China's aligned ASI as `cn-first`. **Every** Gilded Cage on Plan C is China getting there first, never US power concentration (all-safety: 98% cn-first). So the logic isn't buggy: `endingFor` scores China's aligned ASI as the Gilded Cage, and over-burning the lead loses the race. Open: should China-first become its own ending?
+5. ✅ (2026-11-16) China-first is now its own ending, **Second Place** (×0.3). Gilded Cage on Plan C: investigated. `npm run sim` now reports China's aligned ASI as `cn-first`. **Every** Gilded Cage on Plan C is China getting there first, never US power concentration (all-safety: 98% cn-first). So the logic isn't buggy: `endingFor` scores China's aligned ASI as the Gilded Cage, and over-burning the lead loses the race. 
 6. ⏳ Emergent paths: default is to keep the Fork menu until after Step 5.
 
 ## Open questions for the owner (original)

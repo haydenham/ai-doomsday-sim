@@ -18,6 +18,10 @@ export const ASI = 11.5; // Superintelligence, ~10,000×
 export const DEAL_RESUME_Q = 12;
 export const DEAL_CEILING: [q: number, cap: number][] = [[12, 7.4], [14, AC], [32, TED_AI], [52, TED_AI + 0.3]];
 
+// China runs one national project on most of its chips and fast-follows US algorithms (theft, distillation),
+// so a Chinese chip counts for more at the frontier than a US chip split across rival labs. cnAlgo includes it.
+export const CN_EFFICIENCY = 5;
+
 export const ALIGN_LOC = 40; // below this at superintelligence = loss of control
 export const POWER_GILDED = 60;
 

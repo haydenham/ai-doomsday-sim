@@ -73,7 +73,9 @@ export function driftAlloc(s: GameState) {
   s.allocMoved = 0;
   if (inControl(s)) return enforceAlloc(s);
   const pref = labPreference(s);
-  const rate = DRIFT * (s.path === 'C' ? 0.5 : 1);
+  // Plan C, and Plan B once the campaign has bought a lead: the government holds the labs to the split.
+  const spending = s.path === 'C' || (s.path === 'B' && (s.cap - s.cnCap) * 24 >= 3);
+  const rate = DRIFT * (spending ? 0.5 : 1);
   for (const k of ALLOC_KEYS) s.alloc[k] += (pref[k] - s.alloc[k]) * rate;
   enforceAlloc(s);
 }

@@ -16,6 +16,10 @@ export const ENDINGS: Record<EndingId, EndingDef> = {
     id: 'gilded', title: 'The Gilded Cage', multiplier: 0.4,
     epitaph: 'The AI does exactly what it is told, and only a handful of people get to tell it anything. Everyone is rich. No one gets a vote.',
   },
+  cnfirst: {
+    id: 'cnfirst', title: 'Second Place', multiplier: 0.3,
+    epitaph: 'China\'s superintelligence works, and it answers to Beijing. America is comfortable, and has no say in what comes next.',
+  },
   stagnation: {
     id: 'stagnation', title: 'Stagnation', multiplier: 0.6,
     epitaph: 'The machines never woke up, and neither did the economy. Safe, slow and uneasy. Somewhere, someone is still building.',

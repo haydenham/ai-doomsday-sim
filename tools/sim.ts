@@ -19,7 +19,8 @@ const BOTS: Bot[] = [
   { name: 'race-careful', path: 'D', prefer: ['safety', 'race', 'people'], alloc: 'reactive' },
   { name: 'burn-lead', path: 'C', prefer: SAFE, alloc: SAFE_SPLIT },
   { name: 'burn-naive', path: 'C', prefer: ['race', 'power', 'hawk'], alloc: RACE_SPLIT },
-  { name: 'fight', path: 'B', prefer: ['hawk', 'race', 'power'], rails: NO_DEAL },
+  { name: 'fight', path: 'B', prefer: ['hawk', 'race', 'power'] },
+  { name: 'fight-kinetic-spend', path: 'B', prefer: SAFE, force: { b_doctrine: 1 }, alloc: 'reactive' },
   // Plan A: pause in 2029, AC ~mid-2030, TED-AI ~2035, handoff after 2040.
   { name: 'planA', path: 'A', prefer: ['safety', 'dove', 'people'],
     rails: { AC: [2030.25, 2031.5], TED: [2034, 2036.5], ASI: [2040, 2043] } },
@@ -29,7 +30,7 @@ const BOTS: Bot[] = [
   { name: 'random', path: 'D', prefer: [], random: true },
   { name: 'random-all', path: 'D', prefer: [], random: true, alloc: 'random' },
   // Does the dial have a sweet spot? Same (safe) decisions, different splits. No fixed split should win everywhere.
-  ...(['A', 'C', 'D'] as PathId[]).flatMap((path): Bot[] =>
+  ...(['A', 'B', 'C', 'D'] as PathId[]).flatMap((path): Bot[] =>
     STRATEGIES.map(([strat, alloc]) => ({ name: `${path}:${strat}`, path, prefer: SAFE, alloc }))),
 ];
 
@@ -57,9 +58,7 @@ for (const bot of BOTS.filter((b) => !only || b.name === only)) {
       const h = s.history.find((x) => x.cap >= cap);
       if (h) reached[rung].push(START_YEAR + h.q / 4);
     }
-    // China's aligned ASI scores as the Gilded Cage, but it's a lost race, not power at home: report it apart.
-    const label = s.ending === 'gilded' && s.asiBy === 'cn' ? 'cn-first' : s.ending ?? 'none';
-    endings[label] = (endings[label] ?? 0) + 1;
+    endings[s.ending ?? 'none'] = (endings[s.ending ?? 'none'] ?? 0) + 1;
     endQ += s.endQ ?? s.q;
     align += s.alignment;
     score += s.cumGdp * ENDINGS[s.ending!].multiplier;
@@ -73,7 +72,7 @@ for (const bot of BOTS.filter((b) => !only || b.name === only)) {
   }
   wins[bot.name] = (endings.flourishing ?? 0) / runs;
   const pct = (n: number) => `${Math.round((100 * n) / runs)}%`;
-  const asiRuns = Object.entries(endings).filter(([k]) => ['flourishing', 'gilded', 'cn-first', 'loc'].includes(k)).reduce((a, [, v]) => a + v, 0);
+  const asiRuns = Object.entries(endings).filter(([k]) => ['flourishing', 'gilded', 'cnfirst', 'loc'].includes(k)).reduce((a, [, v]) => a + v, 0);
   console.log(`\n== ${bot.name} (${runs} runs) ==`);
   console.log('  endings:', Object.entries(endings).map(([k, v]) => `${k} ${pct(v)}`).join(', '));
   console.log(`  avg end ${quarterLabel(Math.round(endQ / runs))} | avg ASI ${asiRuns ? quarterLabel(Math.round(asi / Math.max(1, asiRuns))) : '-'} | final alignment ${(align / runs).toFixed(0)} | score ${(score / runs).toFixed(0)}`);
@@ -97,7 +96,7 @@ for (const bot of BOTS.filter((b) => !only || b.name === only)) {
 if (!only) {
   const strats = STRATEGIES.map(([n]) => n);
   console.log(`\n== win rate by steering ==\n  path  ${strats.map((n) => n.padStart(11)).join('')}   spread`);
-  for (const path of ['A', 'C', 'D']) {
+  for (const path of ['A', 'B', 'C', 'D']) {
     const row = strats.map((n) => wins[`${path}:${n}`] ?? 0);
     console.log(`  ${path}     ${row.map((w) => `${Math.round(w * 100)}%`.padStart(11)).join('')}   ${Math.round((Math.max(...row) - Math.min(...row)) * 100)}`);
   }

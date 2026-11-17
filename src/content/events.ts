@@ -2,7 +2,7 @@ import type { Choice, Fx, GameState, PendingEvent } from '../sim/types';
 import { concentratePower, declareCovert, moment, releaseOverhang, shiftStance, ticker } from '../sim/helpers';
 import { enforceAlloc, labPreference, theftRisk } from '../sim/alloc';
 import { deployedAlgo, leadMonths } from '../sim/derived';
-import { AC, DEAL_RESUME_Q, TED_AI } from '../sim/constants';
+import { AC, CN_EFFICIENCY, DEAL_RESUME_Q, TED_AI } from '../sim/constants';
 import { rand } from '../sim/rng';
 import { newNegotiation } from './negotiation';
 
@@ -50,6 +50,7 @@ const repealLaws = (s: GameState) => {
 function newAdminPlan(s: GameState) {
   if (s.flags.moratorium) return 'lifts the moratorium';
   if (s.dealActive) return 'calls the deal "a surrender" and may walk away';
+  if (s.flags.bCampaign) return 'ends the campaign against China and opens talks';
   if (s.path === 'D' || s.path === 'B') return 'slows the race and opens talks';
   return 'hands the labs back their compute';
 }
@@ -69,6 +70,7 @@ function loseElection(s: GameState) {
     if (rand(s) < 0.5) collapseDeal(s, 'The new administration withdraws from the AI deal.');
     else ticker(s, 'The new administration keeps the deal, grudgingly.');
   } else if (s.path === 'D' || s.path === 'B') {
+    if (s.flags.bCampaign) { s.flags.bCampaign = false; s.tension = Math.max(0, s.tension - 15); }
     s.computeBoost -= 0.01;
     s.flags.dealEver = true;
     s.flags.talksEndedQ = s.q - 4;
@@ -161,7 +163,8 @@ export const EVENTS: EventDef[] = [
     ],
     onFire: {
       // They get the deployed model, not research still held back by a pause or treaty.
-      run: (s) => { s.cnAlgo = Math.max(s.cnAlgo, 0.9 * deployedAlgo(s)); },
+      // cnAlgo carries China's efficiency factor, so the stolen recipe must too, or a theft changes nothing.
+      run: (s) => { s.cnAlgo = Math.max(s.cnAlgo, 0.9 * CN_EFFICIENCY * deployedAlgo(s)); },
       moment: 'China stole your frontier model\'s weights.',
     },
   },
@@ -183,11 +186,13 @@ export const EVENTS: EventDef[] = [
       { label: 'Hold firm', lean: 'hawk', chips: ['n:50/50', 'b:fabs at risk'],
         fx: {
           run: (s) => {
-            if (rand(s) < 0.5) {
+            // After American strikes, Beijing is less likely to blink, and a skirmish hits harder.
+            if (rand(s) < (s.flags.kinetic ? 0.3 : 0.5)) {
               s.tension -= 30;
               ticker(s, 'Beijing blinks.', 'good');
             } else {
-              s.tension -= 20; s.raw *= 0.75; s.cnRaw *= 0.75; s.gdp *= 0.94; s.powerConc += 10;
+              const k = s.flags.kinetic ? 1.6 : 1;
+              s.tension -= 20; s.raw *= 1 - 0.25 * k; s.cnRaw *= 0.75; s.gdp *= 1 - 0.06 * k; s.powerConc += 10;
               ticker(s, 'Skirmish. Two fabs hit. Chip output −25%.', 'warn');
               moment(s, 'A skirmish in the Taiwan Strait damaged the world\'s chip fabs.', 'danger');
             }
@@ -247,6 +252,23 @@ export const EVENTS: EventDef[] = [
     id: 'china_overtakes', when: (s) => s.q > 4 && leadMonths(s) < 0, chance: 1,
     fx: { headline: 'China takes the lead.',
       moment: 'China took the lead.' },
+  },
+  // ── Plan B: Sabotage, then Spend ──────────────────────────────────────
+  {
+    id: 'b_doctrine', scheduledOnly: true, kind: 'crisis',
+    title: 'Doctrine',
+    body: 'How hard do we hit them?',
+    choices: [
+      { label: 'Cyber', lean: 'dove', chips: ['g:China compute −15%', 'g:China slows', 'b:tension +10'],
+        fx: { mul: { cnRaw: 0.85 }, add: { tension: 10 },
+          headline: 'Malware spreads through Zhonghe\'s training clusters. No one claims it.',
+          moment: 'You chose a cyber campaign against China\'s AI program.' } },
+      { label: 'Kinetic', lean: 'hawk', chips: ['g:China compute −30%', 'g:China slows more', 'b:tension +30', 'b:trust −4', 'b:power → 45+', 'b:war risk'],
+        fx: { mul: { cnRaw: 0.7, cnAlgo: 0.9 }, add: { tension: 30, trust: -4 }, flags: { kinetic: true },
+          run: (s) => concentratePower(s, 45, 8),
+          headline: 'Cruise missiles hit a datacenter in Inner Mongolia. Beijing vows a response.',
+          moment: 'You chose strikes on China\'s datacenters.' } },
+    ],
   },
   // ── Plan A: The Deal ──────────────────────────────────────────────────
   {

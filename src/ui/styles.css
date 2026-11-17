@@ -168,6 +168,7 @@ input { font: inherit; }
 .reveal-loc .reveal-title { color: var(--bad); }
 .reveal-flourishing .reveal-title { color: var(--good); }
 .reveal-gilded .reveal-title { color: var(--amber); }
+.reveal-cnfirst .reveal-title { color: var(--cn); }
 .reveal-epitaph { margin: 0 0 24px; max-width: 620px; }
 .reveal-score { display: flex; flex-wrap: wrap; gap: 8px 36px; margin-bottom: 30px; }
 .reveal-score > div { display: flex; flex-direction: column; }
